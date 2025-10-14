@@ -25,9 +25,14 @@ class RegisteredUserController extends Controller
         $validated = $request->validate([
             'name'                  => ['required', 'string', 'max:255'],
             'email'                 => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'phone'                 => ['nullable', 'string', 'max:20'],
+            'phone'                 => ['nullable', 'regex:/^[2-7]{1}[0-9]{7}$/'],
             'role'                  => ['required', Rule::in(['employee','employer'])],
-            'password'              => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
+            'password'              => ['required', 'confirmed',
+                                        Password::min(8)
+                                            ->mixedCase()
+                                            ->numbers()
+                                            ->symbols()
+                                            ->uncompromised(),],
             'terms'                 => ['accepted'], // checkbox
         ]);
 

@@ -34,4 +34,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::middleware(['auth', 'role:admin'])->get('/admin-only', function () {
+    return 'Acceso autorizado solo para ADMIN.';
+});
+
+Route::middleware(['auth', 'role:employee'])->get('/employee-only', function () {
+    return 'Acceso autorizado solo para EMPLOYEE.';
+});
 
