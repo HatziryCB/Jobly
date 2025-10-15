@@ -20,7 +20,7 @@ class RegisteredUserController extends Controller
         return view('auth.register');
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'name'                  => ['required', 'string', 'max:255'],
@@ -37,21 +37,23 @@ class RegisteredUserController extends Controller
         ]);
 
         $user = User::create([
-            'name'            => $validated['name'],
+            'first_name'      => $validated['first_name'],
+            'last_name'       => $validated['last_name'],
             'email'           => $validated['email'],
             'phone'           => $validated['phone'] ?? null,
-            'role'            => $validated['role'],
+            'password'        => bcrypt($validated['password']),
             'tos_accepted'    => true,
             'tos_accepted_at' => now(),
-            'password'        => bcrypt($validated['password']),
         ]);
+
+        $user->assignRole($validated['role']);
 
         event(new Registered($user));
         Auth::login($user);
 
-        // Redirección por rol
         return redirect()->intended(
-            $user->role === 'employer' ? route('offers.create') : route('offers.index')
+            $user->hasRole('employer') ? route('dashboard.employer') : route('dashboard.employee')
         );
     }
+
 }
