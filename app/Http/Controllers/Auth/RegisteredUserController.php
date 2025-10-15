@@ -20,33 +20,36 @@ class RegisteredUserController extends Controller
         return view('auth.register');
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'                  => ['required', 'string', 'max:255'],
-            'email'                 => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'phone'                 => ['nullable', 'string', 'max:20'],
-            'role'                  => ['required', Rule::in(['employee','employer'])],
-            'password'              => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
-            'terms'                 => ['accepted'], // checkbox
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name'  => ['required', 'string', 'max:255'],
+            'email'      => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'phone'      => ['nullable', 'string', 'max:20'],
+            'password'   => ['required', 'confirmed', Password::defaults()],
+            'role'       => ['required', Rule::in(['employee', 'employer'])],
+            'terms'      => ['accepted'],
         ]);
 
         $user = User::create([
-            'name'            => $validated['name'],
+            'first_name'      => $validated['first_name'],
+            'last_name'       => $validated['last_name'],
             'email'           => $validated['email'],
             'phone'           => $validated['phone'] ?? null,
-            'role'            => $validated['role'],
+            'password'        => bcrypt($validated['password']),
             'tos_accepted'    => true,
             'tos_accepted_at' => now(),
-            'password'        => bcrypt($validated['password']),
         ]);
+
+        $user->assignRole($validated['role']);
 
         event(new Registered($user));
         Auth::login($user);
 
-        // Redirección por rol
         return redirect()->intended(
-            $user->role === 'employer' ? route('offers.create') : route('offers.index')
+            $user->hasRole('employer') ? route('dashboard.employer') : route('dashboard.employee')
         );
     }
+
 }
