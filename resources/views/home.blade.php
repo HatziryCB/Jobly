@@ -12,7 +12,7 @@
                         Profesionales cercanos para trabajos temporales: limpieza, pintura, mudanza, jardinería, reparaciones y más.
                     </p>
 
-                    {{-- Buscador (ancho corregido) --}}
+                    {{-- Buscador --}}
                     <form action="{{ route('offers.index') }}" method="GET" class="mt-8">
                         <div class="w-full max-w-2xl shadow-lg rounded-full overflow-hidden flex">
                             <input name="q"
