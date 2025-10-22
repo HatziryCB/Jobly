@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -27,16 +26,35 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    public function offers() {
-        return $this->hasMany(\App\Models\Offer::class,'employer_id');
-    }
-
-
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Nombre completo virtual
+    public function getFullNameAttribute()
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
+
+    // Relación si es empleador
+    public function offers()
+    {
+        return $this->hasMany(Offer::class, 'employer_id');
+    }
+
+    // Relación si es empleado
+    public function applications()
+    {
+        return $this->hasMany(Application::class, 'employee_id');
+    }
+
+    // Relación con calificaciones recibidas
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class, 'rated_user_id');
     }
 }

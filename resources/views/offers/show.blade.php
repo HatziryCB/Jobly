@@ -1,47 +1,63 @@
 <x-app-layout>
     <x-slot name="header"><h2 class="font-semibold text-xl">{{ $offer->title }}</h2></x-slot>
 
-    <div class="py-6 max-w-3xl mx-auto">
+    <div class="py-6 max-w-4xl mx-auto space-y-6">
         @if (session('status'))
-            <div class="mb-3 alert alert-success">{{ session('status') }}</div>
+            <div class="alert alert-success">{{ session('status') }}</div>
         @endif
 
-        <div class="mb-2 text-muted small">
-            {{ $offer->location_text ?? 'Sin ubicación' }} ·
-            Q{{ $offer->pay_min ?? '?' }} - Q{{ $offer->pay_max ?? '?' }}
+        {{-- Detalles generales --}}
+        <div class="bg-white p-6 rounded shadow space-y-2">
+            <p class="text-gray-600 text-sm">Ubicación: {{ $offer->location_text ?? 'Sin ubicación' }}</p>
+            <p class="text-gray-600 text-sm">Categoría: {{ $offer->category }}</p>
+            <p class="text-gray-600 text-sm">Pago: Q{{ $offer->pay_min ?? '?' }} - Q{{ $offer->pay_max ?? '?' }}</p>
+            <p>{{ $offer->description }}</p>
         </div>
-        <p class="mb-4">{{ $offer->description }}</p>
 
-            @auth
-                {{-- Si soy empleado: botón para postular --}}
-                @if (auth()->user()->role === 'employee')
-                    <form method="POST" action="{{ route('offers.apply',$offer) }}" class="d-flex gap-2 mb-3">
+        {{-- Empleador --}}
+        <div class="bg-white p-6 rounded shadow">
+            <h3 class="text-lg font-semibold mb-2">Publicado por:</h3>
+            <p class="text-gray-800 font-medium">{{ $offer->employer->name }}</p>
+            {{-- Aquí puedes agregar estrellas de calificación en el futuro --}}
+            <p class="text-gray-600 text-sm">Contrataciones anteriores:
+                {{ $offer->employer->offers()->where('status', 'hired')->count() }}
+            </p>
+        </div>
+
+        @auth
+            {{-- Empleado: Formulario para postular --}}
+            @if(auth()->user()->hasRole('employee'))
+                <div class="bg-white p-6 rounded shadow">
+                    <h3 class="text-lg font-semibold mb-2">¿Interesado en esta oferta?</h3>
+                    <form method="POST" action="{{ route('offers.apply', $offer) }}" class="space-y-2">
                         @csrf
-                        <input type="text" name="message" class="form-control" placeholder="Mensaje (opcional)">
-                        <button class="btn btn-primary btn-sm">Postular</button>
+                        <textarea name="message" rows="3" class="w-full border rounded p-2" placeholder="Mensaje (opcional)">{{ old('message') }}</textarea>
+                        <x-primary-button>Postularme</x-primary-button>
                     </form>
-                @endif
+                </div>
+            @endif
 
-                {{-- Si soy el empleador: listar postulaciones y aceptar --}}
-                @if (auth()->id() === $offer->employer_id)
-                    <h6 class="mt-4">Postulaciones</h6>
-                    @php($applications = \App\Models\Application::where('offer_id',$offer->id)->latest()->get())
-                    @forelse($applications as $app)
-                        <div class="border rounded p-2 mb-2">
-                            <div class="small text-muted">Empleado #{{ $app->employee_id }} · Estado: {{ $app->status }}</div>
-                            @if($app->message)<div>{{ $app->message }}</div>@endif
-                            @if($app->status==='pending')
-                                <form method="POST" action="{{ route('applications.accept',$app) }}" class="mt-2">
+            {{-- Empleador: Ver postulaciones --}}
+            @if(auth()->id() === $offer->employer_id)
+                <div class="bg-white p-6 rounded shadow">
+                    <h3 class="text-lg font-semibold mb-4">Postulaciones</h3>
+                    @forelse($offer->applications()->latest()->get() as $app)
+                        <div class="border rounded p-4 mb-3">
+                            <p class="font-medium text-gray-800">{{ $app->employee->name }}</p>
+                            <p class="text-sm text-gray-600">Mensaje: {{ $app->message ?? 'Sin mensaje' }}</p>
+                            <p class="text-sm text-gray-500">Estado: {{ ucfirst($app->status) }}</p>
+                            @if($app->status === 'pending')
+                                <form method="POST" action="{{ route('applications.accept', $app) }}" class="mt-2">
                                     @csrf
-                                    <button class="btn btn-success btn-sm">Aceptar</button>
+                                    <x-primary-button>Aceptar</x-primary-button>
                                 </form>
                             @endif
                         </div>
                     @empty
-                        <p class="text-muted">No hay postulaciones todavía.</p>
+                        <p class="text-gray-600">No hay postulaciones aún.</p>
                     @endforelse
-                @endif
-            @endauth
-
+                </div>
+            @endif
+        @endauth
     </div>
 </x-app-layout>

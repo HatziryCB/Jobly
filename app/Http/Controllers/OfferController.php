@@ -8,48 +8,87 @@ use Illuminate\Http\Request;
 class OfferController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $q = request('q'); // search query
-        $offers = \App\Models\Offer::when($q, function($query) use ($q) {
-            $query->where('title','like',"%$q%")
-                ->orWhere('description','like',"%$q%");
-        })
-            ->where('status','open')
+        $q = $request->input('q');
+        $category = $request->input('category');
+
+        $offers = \App\Models\Offer::query()
+            ->where('status', 'open')
+            ->when($q, fn($query) =>
+            $query->where(function($sub) use ($q) {
+                $sub->where('title', 'like', "%{$q}%")
+                    ->orWhere('description', 'like', "%{$q}%");
+            }))
+            ->when($category, fn($query) =>
+            $query->where('category', $category))
             ->latest()
-            ->paginate(10)
-            ->withQueryString();
-        return view('offers.index', compact('offers','q'));
+            ->paginate(10);
+        return view('offers.index', compact('offers', 'q', 'category'));
     }
 
     public function create()
     {
-        abort_unless(auth()->user()?->role === 'employer', 403, 'Solo empleadores pueden publicar.');
-        return view('offers.create');
+        abort_unless(auth()->user()->hasRole('employer'), 403);
+
+        $categories = [
+            'Limpieza',
+            'Pintura',
+            'Mudanza',
+            'Jardinería',
+            'Reparaciones',
+            'Electricidad',
+            'Plomería',
+            'Otros'
+        ];
+
+        return view('offers.create', compact('categories'));
     }
 
-    public function store(\Illuminate\Http\Request $request) {
-        abort_unless(auth()->user()?->role === 'employer', 403);
+
+    public function store(Request $request)
+    {
+        abort_unless(auth()->user()->hasRole('employer'), 403);
+
         $data = $request->validate([
-            'title' => ['required','string','max:120'],
-            'description' => ['required','string','min:10'],
-            'location_text' => ['nullable','string','max:120'],
-            'pay_min' => ['nullable','integer','min:0'],
-            'pay_max' => ['nullable','integer','min:0','gte:pay_min'],
+            'title' => ['required', 'string', 'max:120'],
+            'description' => ['required', 'string', 'min:10'],
+            'category' => ['required', 'string', 'max:50'],
+            'location_text' => ['nullable', 'string', 'max:120'],
+            'lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180'],
+            'pay_min' => ['nullable', 'integer', 'min:0'],
+            'pay_max' => ['nullable', 'integer', 'min:0', 'gte:pay_min'],
         ]);
+
         $data['employer_id'] = auth()->id();
-        \App\Models\Offer::create($data);
-        return redirect()->route('offers.index')->with('status','Oferta publicada.');
+        $data['status'] = 'open';
+
+        Offer::create($data);
+
+        return redirect()->route('offers.index')->with('status', 'Oferta publicada con éxito.');
     }
 
-    public function show(\App\Models\Offer $offer) {
+    public function show(Offer $offer) {
         return view('offers.show', compact('offer'));
     }
 
-    public function edit(\App\Models\Offer $offer) {
+    public function edit(Offer $offer)
+    {
         abort_unless(auth()->id() === $offer->employer_id, 403);
-        return view('offers.edit', compact('offer'));
+        $categories = [
+            'Limpieza',
+            'Pintura',
+            'Mudanza',
+            'Jardinería',
+            'Reparaciones',
+            'Electricidad',
+            'Plomería',
+            'Otros'
+        ];
+        return view('offers.edit', compact('offer', 'categories'));
     }
+
 
     public function update(\Illuminate\Http\Request $request, \App\Models\Offer $offer) {
         abort_unless(auth()->id() === $offer->employer_id, 403);
