@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!card) return;
     const toRegister = document.getElementById('toRegister');
     const toLogin = document.getElementById('toLogin');
-
+    console.log("Custom JS cargado");
     const goRegister = () => {
         card.classList.add('is-register');                 // <- mueve panel a la derecha
         setTimeout(()=> document.querySelector('.pane-register input')?.focus(), 150);
@@ -16,4 +16,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (location.hash === '#register') goRegister();
     toRegister?.addEventListener('click', goRegister);
     toLogin?.addEventListener('click', goLogin);
-});
+
+   });

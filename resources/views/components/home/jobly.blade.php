@@ -1,4 +1,3 @@
-{{-- ¿POR QUÉ JOBLY?  Beneficios vs métodos informales --}}
 <section class="bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <h2 class="text-3xl font-extrabold text-gray-900 mb-8">¿Por qué Jobly y no redes o referidos?</h2>
