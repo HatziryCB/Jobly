@@ -17,4 +17,4 @@ document.addEventListener('DOMContentLoaded', () => {
     toRegister?.addEventListener('click', goRegister);
     toLogin?.addEventListener('click', goLogin);
 
-   });
+    });

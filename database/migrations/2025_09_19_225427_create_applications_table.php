@@ -16,7 +16,7 @@ return new class extends Migration
             $t->enum('status',['pending','accepted','rejected'])->default('pending');
             $t->timestamp('accepted_at')->nullable();
             $t->timestamps();
-            $t->unique(['offer_id','employee_id']);   // una postulación por oferta/usuario
+            $t->unique(['offer_id','employee_id']);
         });
     }
     public function down(): void { Schema::dropIfExists('applications'); }

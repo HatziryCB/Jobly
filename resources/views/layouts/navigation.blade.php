@@ -5,7 +5,7 @@
             <img src="{{ asset('images/jobly-sf.png') }}" alt="Jobly" class="h-15 w-20">
         </a>
 
-        <!-- Botón hamburguesa móvil -->
+        <!-- Botón móvil -->
         <button @click="open = !open" class="md:hidden text-gray-600 focus:outline-none">
             <svg x-show="!open" class="w-6 h-6" fill="none" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -83,7 +83,9 @@
     <!-- Menú móvil -->
     <div x-show="open" class="md:hidden px-4 pb-4 space-y-2">
         <a href="{{ route('offers.index') }}" class="block text-gray-700">Explorar ofertas</a>
-        <a href="{{ route('offers.create') }}" class="block text-gray-700">Publicar</a>
+        @hasrole('employer')
+        <a href="{{ route('offers.create') }}">Publicar</a>
+        @endhasrole
 
         <div>
             <span class="block font-semibold text-gray-600">Servicios</span>
