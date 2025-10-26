@@ -10,15 +10,22 @@ return Application::configure(basePath: dirname(__DIR__))
         web: [
             __DIR__.'/../routes/web.php',
             __DIR__.'/../routes/auth.php',
-            __DIR__.'/../routes/admin.php',
             __DIR__.'/../routes/offers.php',
+            __DIR__.'/../routes/admin.php',
+            __DIR__.'/../routes/employee.php',
+            __DIR__.'/../routes/employer.php',
+            __DIR__.'/../routes/applications.php',
             __DIR__.'/../routes/profile.php',
         ],
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -49,7 +49,7 @@ class RegisteredUserController extends Controller
             'tos_accepted_at'   => now(),
         ]);
         // ASIGNAR ROL CON SPATIE
-        $user->assignRole($validated['role']);
+        $user->assignRole($request->input('role'));
 
         // EVENTO DE REGISTRO Y AUTENTICACIÓN
         event(new Registered($user));

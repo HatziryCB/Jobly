@@ -14,3 +14,7 @@ Route::middleware('guest')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::get('/test-role', function () {
+    return 'Middleware de Spatie funcionando.';
+})->middleware(['auth', 'role:employer']);

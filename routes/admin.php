@@ -13,8 +13,9 @@ use Illuminate\Support\Facades\Route;
         // Futuras rutas:
         // Route::resource('verifications', AdminVerificationController::class);
     });*/
+
 Route::get('/admin/dashboard', function () {
-    return view('admin.dashboard');
-})->name('admin.dashboard');
+    return view('dashboards.admin');
+})->middleware(['auth', 'role:admin'])->name('admin.dashboard');
 
 
