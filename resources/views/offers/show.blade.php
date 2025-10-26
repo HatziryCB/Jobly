@@ -6,15 +6,32 @@
             <div class="alert alert-success">{{ session('status') }}</div>
         @endif
 
-        {{-- Detalles generales --}}
-        <div class="bg-white p-6 rounded shadow space-y-2">
-            <p class="text-gray-600 text-sm">Ubicación: {{ $offer->location_text ?? 'Sin ubicación' }}</p>
-            <p class="text-gray-600 text-sm">Categoría: {{ $offer->category }}</p>
-            <p class="text-gray-600 text-sm">Pago: Q{{ $offer->pay_min ?? '?' }} - Q{{ $offer->pay_max ?? '?' }}</p>
-            <p>{{ $offer->description }}</p>
-        </div>
+            {{-- Detalles generales --}}
+            <div class="bg-white p-6 rounded shadow space-y-2">
+                <p class="text-gray-600 text-sm">Ubicación: {{ $offer->location_text ?? 'Sin ubicación' }}</p>
+                <p class="text-gray-600 text-sm">Categoría: {{ $offer->category }}</p>
+                <p class="text-gray-600 text-sm">Pago: Q{{ $offer->pay_min ?? '?' }} - Q{{ $offer->pay_max ?? '?' }}</p>
 
-        {{-- Empleador --}}
+                @if($offer->requirements)
+                    <p class="text-gray-600 text-sm">Requisitos: {{ $offer->requirements }}</p>
+                @endif
+
+                @if($offer->estimated_duration_unit)
+                    <p class="text-gray-600 text-sm">
+                        Duración estimada:
+                        @if($offer->estimated_duration_unit === 'hasta finalizar')
+                            Hasta finalizar el trabajo
+                        @else
+                            {{ $offer->estimated_duration_quantity }} {{ $offer->estimated_duration_unit }}
+                        @endif
+                    </p>
+                @endif
+
+                <p class="mt-2">{{ $offer->description }}</p>
+            </div>
+
+
+            {{-- Empleador --}}
         <div class="bg-white p-6 rounded shadow">
             <h3 class="text-lg font-semibold mb-2">Publicado por:</h3>
             <p class="text-gray-800 font-medium">{{ $offer->employer->name }}</p>

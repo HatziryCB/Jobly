@@ -8,7 +8,6 @@
         @if (session('status'))
             <div class="mb-4 text-green-600">{{ session('status') }}</div>
         @endif
-
         {{-- Filtros y buscador --}}
         <form method="GET" action="{{ route('offers.index') }}" class="flex flex-wrap md:flex-nowrap items-center gap-4 mb-4">
             <input type="text" name="q" placeholder="Buscar por título o descripción" value="{{ $q ?? '' }}"
@@ -56,6 +55,22 @@
                                 {{ $offer->pay_max ? ' - Q' . number_format($offer->pay_max) : '' }}
                             </p>
                         @endif
+                        @if($offer->requirements)
+                            <p class="text-sm text-gray-600">
+                                <strong>Requisitos:</strong> {{ $offer->requirements }}
+                            </p>
+                        @endif
+
+                        @if($offer->estimated_duration_unit)
+                            <p class="text-sm text-gray-600">
+                                <strong>Duración:</strong>
+                                @if($offer->estimated_duration_unit === 'hasta finalizar')
+                                    Hasta finalizar
+                                @else
+                                    {{ $offer->estimated_duration_quantity }} {{ $offer->estimated_duration_unit }}
+                                @endif
+                            </p>
+                        @endif
 
                         <a href="{{ route('offers.show', $offer) }}"
                            class="mt-auto inline-block w-max px-4 py-2 text-sm font-medium text-white rounded-2xl bg-[var(--brand-primary)] hover:bg-[var(--brand-secondary)] transition">
@@ -69,32 +84,52 @@
             </div>
 
             {{-- Mapa --}}
-            <div class="w-full mt-4 pointer-events-auto">
-                <div id="map" class="w-full min-h-[400px] rounded-2xl shadow border" style="height: 500px;"></div>
+            <div class="w-full mt-4">
+                <div id="map" class="w-full min-h-[400px] rounded-2xl shadow border" style="height: 500px; position: relative;"></div>
             </div>
         </div>
     </div>
 @endsection
 
 @push('scripts')
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    {{-- Leaflet --}}
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const map = L.map('map').setView([15.7196, -88.5941], 13);
+            const offers = @json($offersForMap);
+
+            const map = L.map('map', {
+                scrollWheelZoom: true,
+                dragging: true,
+                tap: false,
+            }).setView([15.7196, -88.5941], 13);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 18,
-                attribution: '&copy; OpenStreetMap contributors'
+                attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
+            const bounds = [];
+
             @foreach($offers as $offer)
-            @if(!empty($offer->lat) && !empty($offer->lng))
-            L.marker([{{ $offer->lat }}, {{ $offer->lng }}])
-                .addTo(map)
-                .bindPopup(`<strong>{{ $offer->title }}</strong><br>{{ $offer->location_text ?? 'Ubicación no disponible' }}`);
+            @if($offer->lat && $offer->lng)
+            L.marker([{{ $offer->lat }}, {{ $offer->lng }}]).addTo(map)
+                .bindPopup(`
+                <strong>{{ Str::limit($offer->title, 50) }}</strong><br>
+                {{ $offer->location_text ?? 'Ubicación no especificada' }}<br>
+                <a href='{{ route('offers.show', $offer) }}'>Ver detalles</a>
+            `);
             @endif
-            @endforeach
+                @endforeach
+
+            if (bounds.length) {
+                map.fitBounds(bounds, { padding: [40, x40] });
+            }
+
+            const mapElement = document.getElementById('map');
+            mapElement.style.position = 'relative';
         });
     </script>
 @endpush

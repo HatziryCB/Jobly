@@ -13,19 +13,28 @@ class OfferController extends Controller
         $q = $request->input('q');
         $category = $request->input('category');
 
-        $offers = \App\Models\Offer::query()
+        $offersQuery = Offer::query()
             ->where('status', 'open')
             ->when($q, fn($query) =>
             $query->where(function($sub) use ($q) {
                 $sub->where('title', 'like', "%{$q}%")
                     ->orWhere('description', 'like', "%{$q}%");
-            }))
+            })
+            )
             ->when($category, fn($query) =>
-            $query->where('category', $category))
-            ->latest()
-            ->paginate(10);
-        return view('offers.index', compact('offers', 'q', 'category'));
+            $query->where('category', $category)
+            )
+            ->latest();
+        $offers = $offersQuery->paginate(10);
+
+        $offersForMap = $offersQuery
+            ->whereNotNull('lat')
+            ->whereNotNull('lng')
+            ->get(['id', 'title', 'lat', 'lng', 'location_text']);
+
+        return view('offers.index', compact('offers', 'offersForMap', 'q', 'category'));
     }
+
 
     public function create()
     {
@@ -54,12 +63,20 @@ class OfferController extends Controller
             'title' => ['required', 'string', 'max:120'],
             'description' => ['required', 'string', 'min:10'],
             'category' => ['required', 'string', 'max:50'],
-            'location_text' => ['nullable', 'string', 'max:120'],
+            'location_text' => ['required', 'string', 'max:120'],
             'lat' => ['nullable', 'numeric', 'between:-90,90'],
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
             'pay_min' => ['nullable', 'integer', 'min:0'],
             'pay_max' => ['nullable', 'integer', 'min:0', 'gte:pay_min'],
+            'requirements' => ['nullable', 'string', 'max:255'],
+            'estimated_duration_unit' => ['required', 'in:horas,días,semanas,meses,hasta finalizar'],
+            'estimated_duration_quantity' => ['nullable', 'integer', 'min:1'],
         ]);
+
+        // Si la duración es "hasta finalizar", dejar cantidad como null
+        if ($data['estimated_duration_unit'] === 'hasta finalizar') {
+            $data['estimated_duration_quantity'] = null;
+        }
 
         $data['employer_id'] = auth()->id();
         $data['status'] = 'open';
@@ -90,19 +107,31 @@ class OfferController extends Controller
     }
 
 
-    public function update(\Illuminate\Http\Request $request, \App\Models\Offer $offer) {
+    public function update(Request $request, Offer $offer)
+    {
         abort_unless(auth()->id() === $offer->employer_id, 403);
+
         $data = $request->validate([
-            'title' => ['required','string','max:120'],
-            'description' => ['required','string','min:10'],
-            'location_text' => ['nullable','string','max:120'],
-            'pay_min' => ['nullable','integer','min:0'],
-            'pay_max' => ['nullable','integer','min:0','gte:pay_min'],
-            'status' => ['required','in:draft,open,hired,closed'],
+            'title' => ['required', 'string', 'max:120'],
+            'description' => ['required', 'string', 'min:10'],
+            'location_text' => ['required', 'string', 'max:120'],
+            'pay_min' => ['nullable', 'integer', 'min:0'],
+            'pay_max' => ['nullable', 'integer', 'min:0', 'gte:pay_min'],
+            'status' => ['required', 'in:draft,open,hired,closed'],
+            'requirements' => ['nullable', 'string', 'max:255'],
+            'estimated_duration_unit' => ['required', 'in:horas,días,semanas,meses,hasta finalizar'],
+            'estimated_duration_quantity' => ['nullable', 'integer', 'min:1'],
         ]);
+
+        if ($data['estimated_duration_unit'] === 'hasta finalizar') {
+            $data['estimated_duration_quantity'] = null;
+        }
+
         $offer->update($data);
-        return redirect()->route('offers.show',$offer)->with('status','Oferta actualizada.');
+
+        return redirect()->route('offers.show', $offer)->with('status', 'Oferta actualizada.');
     }
+
 
     public function destroy(\App\Models\Offer $offer) {
         abort_unless(auth()->id() === $offer->employer_id, 403);
