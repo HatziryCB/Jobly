@@ -21,9 +21,11 @@ class OfferFactory extends Factory
             'lng' => $this->faker->longitude(-88.61, -88.58),
             'pay_min' => $this->faker->numberBetween(50, 150),
             'pay_max' => $this->faker->numberBetween(151, 300),
-            'estimated_duration_unit' => $this->faker->randomElement(['horas', 'días', 'semanas', 'hasta finalizar']),
-            'estimated_duration_quantity' => function (array $attributes) {
-                return $attributes['estimated_duration_unit'] === 'hasta finalizar' ? null : rand(1, 10);
+            'duration_unit' => $this->faker->randomElement(['horas', 'días', 'semanas', 'meses', 'hasta finalizar']),
+            'duration_quantity' => function (array $attributes) {
+                return $attributes['duration_unit'] === 'hasta finalizar'
+                    ? null
+                    : rand(1, 10);
             },
             'employer_id' => \App\Models\User::factory(),
             'status' => 'open',

@@ -12,30 +12,24 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
 
-            // Nombres y apellidos separados
+            // Nombres y apellidos
             $table->string('first_name');
+            $table->string('second_name')->nullable(); // Nuevo
             $table->string('last_name');
+            $table->string('second_last_name')->nullable(); // Nuevo
 
-            // Autenticación
             $table->string('email')->unique();
             $table->string('password');
 
-            // Teléfono y rol
             $table->string('phone', 8)->nullable();
-            $table->enum('role', ['employee', 'employer', 'admin'])->default('employee');
 
-            // Verificación de email (opcional si usas Breeze con verificación)
             $table->timestamp('email_verified_at')->nullable();
-
-            // Términos y condiciones
             $table->boolean('tos_accepted')->default(false);
             $table->timestamp('tos_accepted_at')->nullable();
 
-            // Laravel default
             $table->rememberToken();
             $table->timestamps();
         });
-
     }
 
     public function down(): void
