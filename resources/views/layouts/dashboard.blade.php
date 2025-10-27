@@ -1,21 +1,16 @@
 @extends('layouts.app')
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>@yield('title', 'Panel de Usuario')</title>
-@vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="bg-gray-100">
-<div class="min-h-screen flex">
-    {{-- Sidebar --}}
-    @include('components.dashboard.sidebar')
 
-    {{-- Contenido principal --}}
-    <div class="flex-1 p-6 overflow-y-auto">
-        @include('components.dashboard.header')
-        @yield('content')
+@section('content')
+    <div class="flex gap-4">
+        {{-- Sidebar --}}
+        @include('components.dashboard.sidebar')
+
+        {{-- Contenido principal con header y contenido dinámico --}}
+        <div class="flex-1 space-y-4">
+            @include('components.dashboard.header')
+            <div class="bg-white p-6 rounded-xl shadow">
+                @yield('dashboard-content')
+            </div>
+        </div>
     </div>
-</div>
-</body>
-</html>
+@endsection
