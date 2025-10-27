@@ -149,10 +149,39 @@ class OfferController extends Controller
         return redirect()->route('offers.show', $offer)->with('status', 'Oferta actualizada.');
     }
 
-
     public function destroy(\App\Models\Offer $offer) {
         abort_unless(auth()->id() === $offer->employer_id, 403);
         $offer->delete();
         return redirect()->route('offers.index')->with('status','Oferta eliminada.');
     }
+
+    public function myOffers(Request $request)
+    {
+        abort_unless(auth()->user()->hasRole('employer'), 403);
+
+        $q = $request->input('q');
+        $status = $request->input('status');
+        $category = $request->input('category');
+
+        $offers = Offer::where('employer_id', auth()->id())
+            ->when($q, fn($query) =>
+            $query->where(function ($sub) use ($q) {
+                $sub->where('title', 'like', "%{$q}%")
+                    ->orWhere('description', 'like', "%{$q}%");
+            })
+            )
+            ->when($status, fn($query) => $query->where('status', $status))
+            ->when($category, fn($query) => $query->where('category', $category))
+            ->latest()
+            ->paginate(6);
+
+        $categories = [
+            'Limpieza', 'Pintura', 'Mudanza', 'Jardinería', 'Reparaciones',
+            'Electricidad', 'Plomería', 'Cuidado de niños', 'Eventos',
+            'Mecánica', 'Construcción', 'Asistencia'
+        ];
+
+        return view('employer.offers', compact('offers', 'categories', 'q', 'status', 'category'));
+    }
+
 }

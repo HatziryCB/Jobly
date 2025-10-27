@@ -11,6 +11,6 @@ Route::middleware(['auth', 'verified', 'role:employer'])
     Route::get('/dashboard', [EmployerDashboardController::class, 'index'])->name('dashboard');
 });
 
-Route::get('/employer/offers', [OfferController::class, 'mine'])
+Route::get('/myOffers', [OfferController::class, 'myOffers'])
     ->name('employer.offers')
     ->middleware(['auth', 'role:employer']);
