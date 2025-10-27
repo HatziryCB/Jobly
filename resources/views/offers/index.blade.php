@@ -20,12 +20,12 @@
                 @endforeach
             </select>
 
-            <button type="submit" class="px-4 py-2 bg-[var(--brand-secondary)] transition text-white rounded-2xl">Filtrar</button>
+            <button type="submit" class="px-3 py-2 bg-[var(--brand-secondary)] transition text-white rounded-2xl">Filtrar</button>
 
             @auth
                 @if(auth()->user()->hasRole('employer'))
-                    <a href="{{ route('offers.create') }}" class="ml-auto text-sm text-blue-600 text- hover:underline">
-                        + Nueva oferta
+                    <a href="{{ route('offers.create') }}" class="px-3 py-2 bg-[var(--brand-primary)] transition text-white rounded-2xl">
+                        Nueva oferta
                     </a>
                 @endif
             @endauth
@@ -84,7 +84,7 @@
             </div>
 
             {{-- Mapa --}}
-            <div class="w-full mt-4">
+            <div class="w-full mt-4 relative z-map">
                 <div id="map" class="w-full min-h-[400px] rounded-2xl shadow border" style="height: 500px; position: relative;"></div>
             </div>
         </div>

@@ -13,8 +13,9 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
 });
 
+Route::get('/categories', function(){
+    return view('categories');
+})->name('categories');
+
 require __DIR__.'/auth.php';
 
-Route::get('/test-role', function () {
-    return 'Middleware de Spatie funcionando.';
-})->middleware(['auth', 'role:employer']);
