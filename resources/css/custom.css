@@ -227,3 +227,15 @@ a{ color:var(--brand-primary); }
 .portal-card.is-register      .portal-side    { transform: translateX(10px);}
 .portal-card.is-register      .portal-form    { transform: translateX(-10px);}
 
+.z-map,
+.z-img {
+    z-index: 10 !important;
+}
+
+.dropdown-menu {
+    z-index: 100 !important;
+}
+
+[x-cloak] {
+    display: none !important;
+}

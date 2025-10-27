@@ -48,7 +48,13 @@ class OfferController extends Controller
             'Reparaciones',
             'Electricidad',
             'Plomería',
-            'Otros'
+            'Cuidado de niños',
+            'Cuidado de adultos mayores',
+            'Eventos',
+            'Mecánica',
+            'Construcción',
+            'Ayuda temporal',
+            'Asistencia'
         ];
 
         return view('offers.create', compact('categories'));
@@ -61,7 +67,7 @@ class OfferController extends Controller
 
         $data = $request->validate([
             'title' => ['required', 'string', 'max:120'],
-            'description' => ['required', 'string', 'min:10'],
+            'description' => ['required', 'string', 'min:30'],
             'category' => ['required', 'string', 'max:50'],
             'location_text' => ['required', 'string', 'max:120'],
             'lat' => ['nullable', 'numeric', 'between:-90,90'],
@@ -69,13 +75,13 @@ class OfferController extends Controller
             'pay_min' => ['nullable', 'integer', 'min:0'],
             'pay_max' => ['nullable', 'integer', 'min:0', 'gte:pay_min'],
             'requirements' => ['nullable', 'string', 'max:255'],
-            'estimated_duration_unit' => ['required', 'in:horas,días,semanas,meses,hasta finalizar'],
-            'estimated_duration_quantity' => ['nullable', 'integer', 'min:1'],
+            'duration_unit' => ['required', 'in:horas,días,semanas,meses,hasta finalizar'],
+            'duration_quantity' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        // Si la duración es "hasta finalizar", dejar cantidad como null
-        if ($data['estimated_duration_unit'] === 'hasta finalizar') {
-            $data['estimated_duration_quantity'] = null;
+        // Si la duración es "hasta f dejar cantidad como null
+        if ($data['duration_unit'] === 'hasta finalizar') {
+            $data['duration_quantity'] = null;
         }
 
         $data['employer_id'] = auth()->id();
@@ -86,7 +92,12 @@ class OfferController extends Controller
         return redirect()->route('offers.index')->with('status', 'Oferta publicada con éxito.');
     }
 
-    public function show(Offer $offer) {
+    public function show(Offer $offer)
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login')->with('message', 'Inicia sesión para ver los detalles de la oferta.');
+        }
+
         return view('offers.show', compact('offer'));
     }
 
@@ -101,7 +112,13 @@ class OfferController extends Controller
             'Reparaciones',
             'Electricidad',
             'Plomería',
-            'Otros'
+            'Cuidado de niños',
+            'Cuidado de adultos mayores',
+            'Eventos',
+            'Mecánica',
+            'Construcción',
+            'Ayuda temporal',
+            'Asistencia'
         ];
         return view('offers.edit', compact('offer', 'categories'));
     }
@@ -119,12 +136,12 @@ class OfferController extends Controller
             'pay_max' => ['nullable', 'integer', 'min:0', 'gte:pay_min'],
             'status' => ['required', 'in:draft,open,hired,closed'],
             'requirements' => ['nullable', 'string', 'max:255'],
-            'estimated_duration_unit' => ['required', 'in:horas,días,semanas,meses,hasta finalizar'],
-            'estimated_duration_quantity' => ['nullable', 'integer', 'min:1'],
+            'duration_unit' => ['required', 'in:horas,días,semanas,meses,hasta finalizar'],
+            'duration_quantity' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        if ($data['estimated_duration_unit'] === 'hasta finalizar') {
-            $data['estimated_duration_quantity'] = null;
+        if ($data['duration_unit'] === 'hasta finalizar') {
+            $data['duration_quantity'] = null;
         }
 
         $offer->update($data);

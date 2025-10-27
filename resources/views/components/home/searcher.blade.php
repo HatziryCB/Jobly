@@ -30,7 +30,7 @@
             </div>
 
             <div class="lg:col-span-5">
-                <div class="relative">
+                <div class="relative z-map">
                     <div class="absolute -inset-6 rounded-3xl"
                          style="background:linear-gradient(135deg,#6C5CE7 0%,#7C4DFF 40%,#00B4D8 100%); opacity:.18; filter:blur(24px);"></div>
                     <img class="relative rounded-3xl shadow-2xl"
