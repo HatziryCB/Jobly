@@ -42,7 +42,7 @@
     <x-input-error :messages="$errors->get('description')" />
 
     {{-- Requisitos + Duración --}}
-    <div class="grid grid-cols-5 gap-4">
+    <div class="grid grid-cols-5 gap-4 pb-6">
         {{-- Requisitos (col-span-3) --}}
         <div class="col-span-3">
             <x-input-label for="requirements" :value="'Requisitos del trabajo'" />
