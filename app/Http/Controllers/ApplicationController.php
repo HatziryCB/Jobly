@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ApplicationController extends Controller
 {
-    public function store(Request $request, Offer $offer) {
+    public function apply(Request $request, Offer $offer) {
         abort_unless(Auth::check() && Auth::user()->hasRole('employee'), 403, 'Solo empleados pueden postular.');
 
         $data = $request->validate([
