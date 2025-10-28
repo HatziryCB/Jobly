@@ -89,15 +89,15 @@ class OfferController extends Controller
 
         Offer::create($data);
 
-        return redirect()->route('offers.index')->with('status', 'Oferta publicada con éxito.');
+        return redirect()->route('employer.offers')->with('success', 'Oferta publicada con éxito.');
     }
 
     public function show(Offer $offer)
     {
         $offer->load('user');
-        if (!auth()->check()) {
-            return redirect()->route('login')->with('message', 'Inicia sesión para ver los detalles de la oferta.');
-        }
+        /*if (!auth()->check()) {
+           return redirect()->route('login')->with('message', 'Inicia sesión para ver los detalles de la oferta.');
+        }*/
         return view('offers.show', compact('offer'));
     }
 
@@ -182,6 +182,15 @@ class OfferController extends Controller
         ];
 
         return view('employer.offers', compact('offers', 'categories', 'q', 'status', 'category'));
+    }
+
+    public function candidates(Offer $offer)
+    {
+        abort_unless(auth()->user()->hasRole('employer') && auth()->id() === $offer->employer_id, 403);
+
+        $applications = $offer->applications()->with(['employee.profile'])->get();
+
+        return view('offers.candidates', compact('offer', 'applications'));
     }
 
 }

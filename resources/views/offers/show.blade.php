@@ -31,7 +31,8 @@
             <span class="font-semibold text-indigo-700">
                 @if($offer->user)
                     {{ $offer->user->first_name }} {{ $offer->user->last_name }}
-                @else<a href="{{ route('profile.show', $offer->user->id) }}" class="text-indigo-600 hover:underline">
+                @else
+                    <a href="{{ route('profile.show', $offer->user->id) }}" class="text-indigo-600 hover:underline">
                         {{ $offer->user->first_name }} {{ $offer->user->last_name }}
                     </a>
                     <span class="text-red-500">[Usuario no asignado]</span>
@@ -114,9 +115,10 @@
             </div>
         @endcan
         @role('employee')
-        <form action="{{ route('applications.store') }}" method="POST" class="mt-6">
+        <form action="#" method="POST" class="mt-6">
             @csrf
             <input type="hidden" name="offer_id" value="{{ $offer->id }}">
+            <textarea name="message" class="w-full rounded-xl mb-3" placeholder="Mensaje al empleador (opcional)"></textarea>
             <button type="submit" class="bg-purple-500 text-white font-bold px-6 py-2 rounded-full hover:bg-purple-600 transition">
                 Postularme a esta oferta
             </button>
