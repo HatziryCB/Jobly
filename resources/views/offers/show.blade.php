@@ -1,80 +1,126 @@
-<x-app-layout>
-    <x-slot name="header"><h2 class="font-semibold text-xl">{{ $offer->title }}</h2></x-slot>
+@extends('layouts.dashboard')
 
-    <div class="py-6 max-w-4xl mx-auto space-y-6">
-        @if (session('status'))
-            <div class="alert alert-success">{{ session('status') }}</div>
-        @endif
+@section('title', 'Detalles de la oferta')
 
-            {{-- Detalles generales --}}
-            <div class="bg-white p-6 rounded shadow space-y-2">
-                <p class="text-gray-600 text-sm">Ubicación: {{ $offer->location_text ?? 'Sin ubicación' }}</p>
-                <p class="text-gray-600 text-sm">Categoría: {{ $offer->category }}</p>
-                <p class="text-gray-600 text-sm">Pago: Q{{ $offer->pay_min ?? '?' }} - Q{{ $offer->pay_max ?? '?' }}</p>
+@section('content')
+    <div class="max-w-5xl mx-auto bg-white p-6 rounded-2xl shadow-lg space-y-6">
 
-                @if($offer->requirements)
-                    <p class="text-gray-600 text-sm">Requisitos: {{ $offer->requirements }}</p>
-                @endif
+        {{-- Título --}}
+        <div class="flex items-center justify-between">
+            <h1 class="text-3xl font-bold text-gray-800">{{ $offer->title }}</h1>
 
-                @if($offer->estimated_duration_unit)
-                    <p class="text-gray-600 text-sm">
-                        Duración estimada:
-                        @if($offer->estimated_duration_unit === 'hasta finalizar')
-                            Hasta finalizar el trabajo
-                        @else
-                            {{ $offer->estimated_duration_quantity }} {{ $offer->estimated_duration_unit }}
-                        @endif
-                    </p>
-                @endif
-
-                <p class="mt-2">{{ $offer->description }}</p>
-            </div>
-
-
-            {{-- Empleador --}}
-        <div class="bg-white p-6 rounded shadow">
-            <h3 class="text-lg font-semibold mb-2">Publicado por:</h3>
-            <p class="text-gray-800 font-medium">{{ $offer->employer->name }}</p>
-            {{-- Aquí puedes agregar estrellas de calificación en el futuro --}}
-            <p class="text-gray-600 text-sm">Contrataciones anteriores:
-                {{ $offer->employer->offers()->where('status', 'hired')->count() }}
-            </p>
-        </div>
-
-        @auth
-            {{-- Empleado: Formulario para postular --}}
-            @if(auth()->user()->hasRole('employee'))
-                <div class="bg-white p-6 rounded shadow">
-                    <h3 class="text-lg font-semibold mb-2">¿Interesado en esta oferta?</h3>
-                    <form method="POST" action="{{ route('offers.apply', $offer) }}" class="space-y-2">
+            {{-- Botones de acción (solo para el empleador) --}}
+            @can('update', $offer)
+                <div class="flex space-x-2">
+                    <a href="{{ route('offers.edit', $offer) }}" class="text-lime-600 hover:text-lime-800">
+                        <i class="fas fa-pen-to-square text-xl"></i>
+                    </a>
+                    <form action="{{ route('offers.destroy', $offer) }}" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar esta oferta?')">
                         @csrf
-                        <textarea name="message" rows="3" class="w-full border rounded p-2" placeholder="Mensaje (opcional)">{{ old('message') }}</textarea>
-                        <x-primary-button>Postularme</x-primary-button>
+                        @method('DELETE')
+                        <button type="submit" class="text-rose-500 hover:text-rose-700">
+                            <i class="fas fa-trash text-xl"></i>
+                        </button>
                     </form>
                 </div>
-            @endif
+            @endcan
+        </div>
 
-            {{-- Empleador: Ver postulaciones --}}
-            @if(auth()->id() === $offer->employer_id)
-                <div class="bg-white p-6 rounded shadow">
-                    <h3 class="text-lg font-semibold mb-4">Postulaciones</h3>
-                    @forelse($offer->applications()->latest()->get() as $app)
-                        <div class="border rounded p-4 mb-3">
-                            <p class="font-medium text-gray-800">{{ $app->employee->name }}</p>
-                            <p class="text-sm text-gray-600">Mensaje: {{ $app->message ?? 'Sin mensaje' }}</p>
-                            <p class="text-sm text-gray-500">Estado: {{ ucfirst($app->status) }}</p>
-                            @if($app->status === 'pending')
-                                <form method="POST" action="{{ route('applications.accept', $app) }}" class="mt-2">
-                                    @csrf
-                                    <x-primary-button>Aceptar</x-primary-button>
-                                </form>
-                            @endif
-                        </div>
-                    @empty
-                        <p class="text-gray-600">No hay postulaciones aún.</p>
-                    @endforelse
+        {{-- Empleador y calificación --}}
+        <div class="flex items-center gap-2 text-gray-600">
+            <span class="font-semibold text-indigo-700">
+                @if($offer->user)
+                    {{ $offer->user->first_name }} {{ $offer->user->last_name }}
+                @else<a href="{{ route('profile.show', $offer->user->id) }}" class="text-indigo-600 hover:underline">
+                        {{ $offer->user->first_name }} {{ $offer->user->last_name }}
+                    </a>
+                    <span class="text-red-500">[Usuario no asignado]</span>
+                @endif
+            </span>
+            {{-- Calificación --}}
+            <span class="text-yellow-500">
+                @for($i = 1; $i <= 5; $i++)
+                    <i class="fas fa-star"></i>
+                @endfor
+            </span>
                 </div>
-            @endif
-        @endauth
+                {{-- Etiqueta de categoría --}}
+            <span class="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold mt-4">
+                {{ $offer->category }}
+            </span>
+
+        {{-- Info resumida con íconos --}}
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center mt-6">
+            {{-- Pago --}}
+            <div>
+                <i class="fas fa-money-bill-wave fa-2x text-green-600 mb-1"></i>
+                <div class="text-gray-800 font-semibold">
+                    Q{{ $offer->payment_min ?? '-' }} - Q{{ $offer->payment_max ?? '-' }}
+                </div>
+                <div class="text-sm text-gray-500">Pago estimado</div>
+            </div>
+
+            {{-- Ubicación --}}
+            <div>
+                <i class="fas fa-map-marker-alt fa-2x text-pink-500 mb-1"></i>
+                <div class="text-gray-800 font-semibold">
+                    {{ $offer->location_text ?? '-' }}
+                </div>
+                <div class="text-sm text-gray-500">Ubicación</div>
+            </div>
+
+            {{-- Duración --}}
+            <div>
+                <i class="fas fa-clock fa-2x text-yellow-500 mb-1"></i>
+                <div class="text-gray-800 font-semibold">
+                    {{ $offer->estimated_duration_quantity ?? '-' }} {{ $offer->estimated_duration_unit ?? '-' }}
+                </div>
+                <div class="text-sm text-gray-500">Duración</div>
+            </div>
+
+            {{-- Cantidad (fijo por ahora o cuando lo implementes) --}}
+            <div>
+                <i class="fas fa-list-ol fa-2x text-cyan-500 mb-1"></i>
+                <div class="text-gray-800 font-semibold">10</div>
+                <div class="text-sm text-gray-500">Cantidad</div>
+            </div>
+        </div>
+
+        {{-- Descripción --}}
+        <div>
+            <h2 class="text-xl font-semibold text-gray-800 mb-1">Descripción</h2>
+            <p class="text-gray-700 leading-relaxed">{{ $offer->description }}</p>
+        </div>
+
+        {{-- Requisitos (si hay) --}}
+        @if($offer->requirements)
+            <div>
+                <h2 class="text-xl font-semibold text-gray-800 mb-1">Requisitos</h2>
+                <p class="text-gray-700 leading-relaxed whitespace-pre-line">{{ $offer->requirements }}</p>
+            </div>
+        @endif
+        @can('update', $offer)
+            <div class="flex gap-2 mt-4">
+                <a href="{{ route('offers.edit', $offer) }}" class="text-blue-500 hover:text-blue-700">
+                    <i class="fas fa-edit fa-lg"></i> Editar
+                </a>
+                <form method="POST" action="{{ route('offers.destroy', $offer) }}" onsubmit="return confirm('¿Estás seguro de eliminar esta oferta?');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-trash-alt fa-lg"></i> Eliminar
+                    </button>
+                </form>
+            </div>
+        @endcan
+        @role('employee')
+        <form action="{{ route('applications.store') }}" method="POST" class="mt-6">
+            @csrf
+            <input type="hidden" name="offer_id" value="{{ $offer->id }}">
+            <button type="submit" class="bg-purple-500 text-white font-bold px-6 py-2 rounded-full hover:bg-purple-600 transition">
+                Postularme a esta oferta
+            </button>
+        </form>
+        @endrole
     </div>
-</x-app-layout>
+@endsection

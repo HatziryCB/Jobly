@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function(){
@@ -16,6 +17,9 @@ Route::middleware('guest')->group(function () {
 Route::get('/categories', function(){
     return view('categories');
 })->name('categories');
+
+Route::get('/users/{user}', [ProfileController::class, 'show'])
+    ->name('profile.show');
 
 require __DIR__.'/auth.php';
 
