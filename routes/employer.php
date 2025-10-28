@@ -14,3 +14,8 @@ Route::middleware(['auth', 'verified', 'role:employer'])
 Route::get('/myOffers', [OfferController::class, 'myOffers'])
     ->name('employer.offers')
     ->middleware(['auth', 'role:employer']);
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/offers/{offer}', [OfferController::class, 'show'])
+        ->name('offers.show');
+});

@@ -15,4 +15,6 @@ Route::middleware(['auth', 'role:employer'])->group(function () {
     Route::post('offers', [OfferController::class, 'store'])->name('offers.store');
 });
 
-
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/offers/{offer}', [OfferController::class, 'show'])->name('offers.show');
+});

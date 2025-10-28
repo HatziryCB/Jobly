@@ -94,10 +94,10 @@ class OfferController extends Controller
 
     public function show(Offer $offer)
     {
+        $offer->load('user');
         if (!auth()->check()) {
             return redirect()->route('login')->with('message', 'Inicia sesión para ver los detalles de la oferta.');
         }
-
         return view('offers.show', compact('offer'));
     }
 
