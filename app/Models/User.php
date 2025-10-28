@@ -10,7 +10,6 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     use HasFactory, HasRoles, Notifiable;
-
     protected $fillable = [
         'first_name',
         'last_name',
@@ -20,12 +19,10 @@ class User extends Authenticatable
         'tos_accepted',
         'tos_accepted_at',
     ];
-
     protected $hidden = [
         'password',
         'remember_token',
     ];
-
     protected function casts(): array
     {
         return [
@@ -33,26 +30,18 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-
-    // Nombre completo virtual
     public function getFullNameAttribute()
     {
         return "{$this->first_name} {$this->last_name}";
     }
-
-    // Relación si es empleador
     public function offers()
     {
         return $this->hasMany(Offer::class, 'employer_id');
     }
-
-    // Relación si es empleado
     public function applications()
     {
         return $this->hasMany(Application::class, 'employee_id');
     }
-
-    // Relación con calificaciones recibidas
     public function ratings()
     {
         return $this->hasMany(Rating::class, 'rated_user_id');

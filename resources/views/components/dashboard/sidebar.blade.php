@@ -24,7 +24,7 @@
         @role('employee')
         <a href="{{ route('employee.dashboard') }}" class="block py-2 px-3 rounded hover:bg-gray-100">Dashboard</a>
         <a href="{{ route('profile.edit') }}" class="block py-2 px-3 rounded hover:bg-gray-100">Mi Perfil</a>
-        <a href="{{ route('employee.applications') }}" class="block py-2 px-3 rounded hover:bg-gray-100">Mis Postulaciones</a>
+        <a href="#" class="block py-2 px-3 rounded hover:bg-gray-100">Mis Postulaciones</a>
         @endrole
 
         <form method="POST" action="{{ route('logout') }}">
