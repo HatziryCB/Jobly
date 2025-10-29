@@ -42,7 +42,7 @@
     <x-input-error :messages="$errors->get('description')" />
 
     {{-- Requisitos + Duración --}}
-    <div class="grid grid-cols-5 gap-4">
+    <div class="grid grid-cols-5 gap-4 pb-6">
         {{-- Requisitos (col-span-3) --}}
         <div class="col-span-3">
             <x-input-label for="requirements" :value="'Requisitos del trabajo'" />
@@ -137,10 +137,17 @@
     <script>
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(function(position) {
+                console.log("Geolocation success:", position.coords.latitude, position.coords.longitude);
+
                 document.getElementById('lat').value = position.coords.latitude.toFixed(6);
                 document.getElementById('lng').value = position.coords.longitude.toFixed(6);
+            }, function(error) {
+                console.error("Geolocation error:", error.message);
             });
+        } else {
+            console.warn("Geolocation not supported by this browser.");
         }
     </script>
+
 @endpush
 

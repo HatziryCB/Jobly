@@ -50,7 +50,7 @@
                     </button>
                     <div x-show="open" @click.outside="open = false"
                          class="absolute mt-2 w-56 bg-white shadow rounded p-2 z-[100]">
-                        <a href="{{ route('profile.show') }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Mi perfil</a>
+                        <a href="{{ route('profile.show', auth()->id()) }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Mi perfil</a>
 
                         @role('employer')
                         <a href="{{ route('employer.dashboard') }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Panel</a>

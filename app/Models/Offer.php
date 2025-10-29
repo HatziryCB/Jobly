@@ -21,23 +21,14 @@ class Offer extends Model
         'lng',
         'category',
     ];
-
-    // Relación con el usuario empleador
-    public function employer()
+    public function user()
     {
         return $this->belongsTo(User::class, 'employer_id');
     }
 
-    // Relación con las postulaciones
     public function applications()
     {
         return $this->hasMany(Application::class);
     }
-
-    // Relación con posibles calificaciones (a futuro)
-    // public function ratings()
-    // {
-    //     return $this->hasMany(Rating::class);
-    // }
 }
 

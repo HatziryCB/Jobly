@@ -1,18 +1,20 @@
 <?php
+
+use App\Http\Controllers\CandidateController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OfferController;
-use App\Http\Controllers\ApplicationController;
 
-Route::middleware(['auth','verified'])->group(function() {
-    Route::resource('offers', OfferController::class)->middleware(['auth', 'verified']);
+Route::middleware(['auth', 'verified'])->group(function () {
+
+    Route::middleware('role:employer')->group(function () {
+        Route::get('/offers/create', [OfferController::class, 'create'])->name('offers.create');
+        Route::get('/offers/{offer}/edit', [OfferController::class, 'edit'])->name('offers.edit');
+        Route::get('/offer/{offer}/candidates', [OfferController::class, 'candidates'])->name('offers.candidates');
+        Route::post('/offers', [OfferController::class, 'store'])->name('offers.store');
+        Route::put('/offers/{offer}', [OfferController::class, 'update'])->name('offers.update');
+        Route::delete('/offers/{offer}', [OfferController::class, 'destroy'])->name('offers.destroy');
+        Route::get('/my-offers', [OfferController::class, 'myOffers'])->name('employer.offers');
+        Route::get('/offers/{offer}', [OfferController::class, 'show'])->name('offers.show');
+    });
 });
-
-// routes/offers.php
-Route::middleware(['auth'])->get('/offers', [OfferController::class, 'index'])->name('offers.index');
-
-Route::middleware(['auth', 'role:employer'])->group(function () {
-    Route::get('offers/create', [OfferController::class, 'create'])->name('offers.create');
-    Route::post('offers', [OfferController::class, 'store'])->name('offers.store');
-});
-
 

@@ -1,38 +1,39 @@
-@extends('layouts.employee')
+@extends('layouts.dashboard')
 
-@section('title', 'Panel de empleado')
+@section('title', 'Dashboard de Empleado')
 
-@section('content')
-    <x-employee.header />
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
-        {{-- Sidebar izquierdo --}}
-        <div>
-            <x-employee.sidebar />
+@section('dashboard-content')
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-6 rounded-xl shadow text-center">
+            <p class="text-gray-500 mb-2">Postulaciones Realizadas</p>
+            <h2 class="text-3xl font-bold text-purple-600">{{ $applicationsMade }}</h2>
         </div>
+        <div class="bg-white p-6 rounded-xl shadow text-center">
+            <p class="text-gray-500 mb-2">Procesadas</p>
+            <h2 class="text-3xl font-bold text-green-600">{{ $applicationsProcessed }}</h2>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow text-center">
+            <p class="text-gray-500 mb-2">Rechazadas</p>
+            <h2 class="text-3xl font-bold text-red-600">{{ $applicationsRejected }}</h2>
+        </div>
+    </div>
 
-        {{-- Contenido central --}}
-        <div class="lg:col-span-2 space-y-6">
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <x-dashboard.stat title="Postulaciones enviadas" value="8" />
-                <x-dashboard.stat title="Aceptadas" value="3" />
-                <x-dashboard.stat title="Rechazadas" value="2" />
-            </div>
-
-            {{-- Postulaciones recientes --}}
-            <div class="bg-white rounded-xl shadow p-4">
-                <h2 class="text-lg font-semibold mb-4">Mis últimas postulaciones</h2>
-                @forelse($applications as $app)
-                    <div class="border rounded p-3 mb-2">
-                        <p class="text-sm font-medium text-gray-700">
-                            {{ $app->offer->title }} —
-                            <span class="text-xs text-gray-500">Estado: {{ ucfirst($app->status) }}</span>
-                        </p>
+    <div class="mt-8">
+        <h3 class="text-xl font-semibold mb-4 text-gray-700">Ofertas Recomendadas</h3>
+        <div class="grid gap-4">
+            @forelse ($recommendedOffers as $offer)
+                <div class="bg-white p-4 rounded-xl shadow flex justify-between items-center">
+                    <div>
+                        <h4 class="text-lg font-bold text-purple-700">{{ $offer->title }}</h4>
+                        <p class="text-sm text-gray-500">{{ $offer->category }}</p>
+                        <p class="text-sm text-gray-500">{{ $offer->location_text }}</p>
+                        <p class="text-sm text-gray-500">Q{{ $offer->min_payment }} - Q{{ $offer->max_payment }}</p>
                     </div>
-                @empty
-                    <p class="text-gray-500">Aún no has realizado postulaciones.</p>
-                @endforelse
-            </div>
+                    <a href="{{ route('offers.show', $offer->id) }}" class="text-indigo-600 hover:underline">Ver más</a>
+                </div>
+            @empty
+                <p class="text-gray-500">No hay recomendaciones disponibles.</p>
+            @endforelse
         </div>
     </div>
 @endsection
