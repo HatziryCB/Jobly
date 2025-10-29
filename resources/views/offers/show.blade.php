@@ -8,8 +8,7 @@
         {{-- Título --}}
         <div class="flex items-center justify-between">
             <h1 class="text-3xl font-bold text-gray-800">{{ $offer->title }}</h1>
-
-            {{-- Botones de acción (solo para el empleador) --}}
+            {{-- Botones de acción --}}
             @can('update', $offer)
                 <div class="flex space-x-2">
                     <a href="{{ route('offers.edit', $offer) }}" class="text-lime-600 hover:text-lime-800">
@@ -44,46 +43,52 @@
                     <i class="fas fa-star"></i>
                 @endfor
             </span>
-                </div>
-                {{-- Etiqueta de categoría --}}
-            <span class="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold mt-4">
-                {{ $offer->category }}
-            </span>
+        </div>
+        {{-- Categoría --}}
+        @if($offer->category)
+            <span class="inline-block bg-purple-100 text-purple-700 px-4 py-1 rounded-full text-sm font-semibold mb-4">
+{{ ucfirst($offer->category) }}
+</span>
+        @endif
 
-        {{-- Info resumida con íconos --}}
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center mt-6">
-            {{-- Pago --}}
+
+        {{-- Información de la oferta --}}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center mb-8">
+            {{-- Pago estimado --}}
             <div>
-                <i class="fas fa-money-bill-wave fa-2x text-green-600 mb-1"></i>
-                <div class="text-gray-800 font-semibold">
-                    Q{{ $offer->payment_min ?? '-' }} - Q{{ $offer->payment_max ?? '-' }}
+                <div class="text-4xl mb-2">
+                    <i class="fas fa-money-bill-wave text-green-500"></i>
                 </div>
-                <div class="text-sm text-gray-500">Pago estimado</div>
+                <p class="font-bold text-lg">
+                    Q{{ $offer->min_payment ?? '--' }} - Q{{ $offer->max_payment ?? '--' }}
+                </p>
+                <p class="text-sm text-gray-600">Pago estimado</p>
             </div>
 
             {{-- Ubicación --}}
             <div>
-                <i class="fas fa-map-marker-alt fa-2x text-pink-500 mb-1"></i>
-                <div class="text-gray-800 font-semibold">
-                    {{ $offer->location_text ?? '-' }}
+                <div class="text-4xl mb-2">
+                    <i class="fas fa-map-marker-alt text-pink-500"></i>
                 </div>
-                <div class="text-sm text-gray-500">Ubicación</div>
+                <p class="font-bold text-lg">
+                    {{ $offer->location_text ?? '--' }}
+                </p>
+                <p class="text-sm text-gray-600">Ubicación</p>
             </div>
 
-            {{-- Duración --}}
+            {{-- Duración estimada --}}
             <div>
-                <i class="fas fa-clock fa-2x text-yellow-500 mb-1"></i>
-                <div class="text-gray-800 font-semibold">
-                    {{ $offer->estimated_duration_quantity ?? '-' }} {{ $offer->estimated_duration_unit ?? '-' }}
+                <div class="text-4xl mb-2">
+                    <i class="fas fa-clock text-yellow-500"></i>
                 </div>
-                <div class="text-sm text-gray-500">Duración</div>
-            </div>
-
-            {{-- Cantidad (fijo por ahora o cuando lo implementes) --}}
-            <div>
-                <i class="fas fa-list-ol fa-2x text-cyan-500 mb-1"></i>
-                <div class="text-gray-800 font-semibold">10</div>
-                <div class="text-sm text-gray-500">Cantidad</div>
+                <p class="font-bold text-lg">
+                    @if ($offer->estimated_duration_unit)
+                        {{ $offer->estimated_duration_quantity ?? '1' }} {{ strtolower($offer->estimated_duration_unit) }}
+                    @else
+                        --
+                    @endif
+                </p>
+                <p class="text-sm text-gray-600">Duración</p>
             </div>
         </div>
 
@@ -93,13 +98,14 @@
             <p class="text-gray-700 leading-relaxed">{{ $offer->description }}</p>
         </div>
 
-        {{-- Requisitos (si hay) --}}
-        @if($offer->requirements)
-            <div>
-                <h2 class="text-xl font-semibold text-gray-800 mb-1">Requisitos</h2>
-                <p class="text-gray-700 leading-relaxed whitespace-pre-line">{{ $offer->requirements }}</p>
-            </div>
-        @endif
+        {{-- Requisitos --}}
+        <div class="mt-6">
+            <h3 class="text-xl font-semibold mb-2">Requisitos del trabajo</h3>
+            <p class="text-gray-700 whitespace-pre-line">
+                {{ $offer->requirements ?? 'No se especificaron requisitos.' }}
+            </p>
+        </div>
+
         @can('update', $offer)
             <div class="flex gap-2 mt-4">
                 <a href="{{ route('offers.edit', $offer) }}" class="text-blue-500 hover:text-blue-700">

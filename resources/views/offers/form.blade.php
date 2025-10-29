@@ -137,10 +137,17 @@
     <script>
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(function(position) {
+                console.log("Geolocation success:", position.coords.latitude, position.coords.longitude);
+
                 document.getElementById('lat').value = position.coords.latitude.toFixed(6);
                 document.getElementById('lng').value = position.coords.longitude.toFixed(6);
+            }, function(error) {
+                console.error("Geolocation error:", error.message);
             });
+        } else {
+            console.warn("Geolocation not supported by this browser.");
         }
     </script>
+
 @endpush
 

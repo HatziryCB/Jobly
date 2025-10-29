@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function(){
     return view('home');
 })->name('home');
+
 Route::view('/about', 'about')->name('about');
 Route::view('/categories', 'categories.index')->name('categories.index');
 
