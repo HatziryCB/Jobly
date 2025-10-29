@@ -16,12 +16,7 @@ class RouteServiceProvider extends ServiceProvider
         parent::boot();
 
         $this->routes(function () {
-            Route::middleware('web')->group(base_path('routes/web.php'));
-            Route::middleware('web')->group(base_path('routes/auth.php'));
-            Route::middleware('web')->group(base_path('routes/offers.php'));
-            Route::middleware('web')->group(base_path('routes/profile.php'));
-            Route::middleware('web')->group(base_path('routes/profile.php'));
-            Route::middleware('web')->group(base_path('routes/dashboard.php'));
+            //
         });
     }
 }

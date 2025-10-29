@@ -7,7 +7,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class   User extends Authenticatable
 {
     use HasFactory, HasRoles, Notifiable;
     protected $fillable = [
@@ -30,10 +30,6 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    public function getFullNameAttribute()
-    {
-        return "{$this->first_name} {$this->last_name}";
-    }
     public function offers()
     {
         return $this->hasMany(Offer::class, 'employer_id');
@@ -42,8 +38,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Application::class, 'employee_id');
     }
-    public function ratings()
+    public function profile()
     {
-        return $this->hasMany(Rating::class, 'rated_user_id');
+        return $this->hasOne(UserProfile::class);
     }
+
 }
