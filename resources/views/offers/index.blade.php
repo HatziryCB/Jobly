@@ -8,6 +8,7 @@
         @if (session('status'))
             <div class="mb-4 text-green-600">{{ session('status') }}</div>
         @endif
+
         {{-- Filtros y buscador --}}
         <form method="GET" action="{{ route('offers.index') }}" class="flex flex-wrap md:flex-nowrap items-center gap-4 mb-4">
             <input type="text" name="q" placeholder="Buscar por título o descripción" value="{{ $q ?? '' }}"
@@ -20,74 +21,99 @@
                 @endforeach
             </select>
 
-            <button type="submit" class="px-3 py-2 bg-[var(--brand-secondary)] transition text-white rounded-2xl">Filtrar</button>
+            <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl transition">Filtrar</button>
 
             @auth
                 @if(auth()->user()->hasRole('employer'))
-                    <a href="{{ route('offers.create') }}" class="px-3 py-2 bg-[var(--brand-primary)] transition text-white rounded-2xl">
+                    <a href="{{ route('offers.create') }}" class="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-2xl transition">
                         Nueva oferta
                     </a>
                 @endif
             @endauth
         </form>
 
-        {{-- Contenido principal --}}
+        {{-- Contenedor principal de contenido --}}
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {{-- Listado de ofertas (2 columnas) --}}
+            {{-- Columna izquierda: Ofertas --}}
             <div class="lg:col-span-2 space-y-4">
-                @foreach($offers as $offer)
-                    <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-5 flex flex-col gap-2 hover:shadow-lg transition">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-lg font-semibold text-gray-800">{{ $offer->title }}</h3>
-                            <span class="text-sm bg-blue-100 text-cyan-700 px-2 py-1 rounded-full">{{ $offer->category }}</span>
+                @forelse($offers as $offer)
+                    <div class="bg-white rounded-2xl shadow-md border border-gray-200 p-5 flex flex-col gap-2 hover:shadow-lg transition relative">
+                            @php
+                                $colors = [
+                                    'Limpieza' => 'bg-pink-100 text-pink-700',
+                                    'Pintura' => 'bg-blue-100 text-blue-700',
+                                    'Mudanza' => 'bg-green-100 text-green-700',
+                                    'Jardinería' => 'bg-lime-100 text-lime-700',
+                                    'Reparaciones' => 'bg-yellow-100 text-yellow-700',
+                                    'Electricidad' => 'bg-orange-100 text-orange-700',
+                                    'Plomería' => 'bg-cyan-100 text-cyan-700',
+                                    'Eventos' => 'bg-purple-100 text-purple-700',
+                                    'Cuidado de niños' => 'bg-rose-100 text-rose-700',
+                                    'Mecánica' => 'bg-amber-100 text-amber-700',
+                                    'Construcción' => 'bg-sky-100 text-sky-700',
+                                    'Asistencia' => 'bg-teal-100 text-teal-700',
+                                ];
+                                $color = $colors[$offer->category] ?? 'bg-gray-100 text-gray-700';
+                            @endphp
+                            {{-- Etiqueta categoría --}}
+                            <span class="px-3 py-1 right-4 top-4 absolute rounded-full text-xs font-semibold {{ $color }}">
+                            {{ $offer->category }}
+                            </span>
+                        {{-- Título --}}
+                        <h3 class="text-xl font-bold text-gray-800">{{ $offer->title }}</h3>
+
+                        {{-- Descripción breve --}}
+                        <p class="text-lg text-gray-600">{{ Str::limit($offer->description, 100) }}</p>
+
+                        {{-- Ubicación --}}
+                        <div class="flex items-center gap-2 text-m text-gray-700">
+                            <i class="fa-solid fa-location-dot text-pink-500"></i>
+                            {{ $offer->location_text ?? 'No especificada' }}
                         </div>
 
-                        <p class="text-sm text-gray-600">{{ Str::limit($offer->description, 100) }}</p>
+                        {{-- Pago --}}
+                        <div class="flex items-center gap-2 text-sm text-gray-700">
+                            <i class="fa-solid fa-money-bill-wave text-green-500"></i>
+                            @if($offer->pay_min || $offer->pay_max)
+                                Q{{ number_format($offer->pay_min) ?? '—' }} - Q{{ number_format($offer->pay_max) ?? '—' }}
+                            @else
+                                No definido
+                            @endif
+                        </div>
 
-                        @if($offer->location_text)
-                            <p class="text-sm text-gray-500"><i class="fa-solid fa-location-dot mr-1 text-amber-400 "></i>{{ $offer->location_text }}</p>
-                        @endif
+                        {{-- Duración --}}
+                        <div class="flex items-center gap-2 text-sm text-gray-700">
+                            <i class="fa-solid fa-clock text-yellow-400"></i>
+                            @if($offer->duration_unit === 'hasta finalizar')
+                                Hasta finalizar
+                            @else
+                                {{ $offer->duration_quantity }} {{ $offer->duration_unit }}
+                            @endif
+                        </div>
 
-                        @if($offer->pay_min || $offer->pay_max)
-                            <p class="text-sm text-gray-700">
-                                <strong>Pago:</strong>
-                                {{ $offer->pay_min ? 'Q' . number_format($offer->pay_min) : '' }}
-                                {{ $offer->pay_max ? ' - Q' . number_format($offer->pay_max) : '' }}
-                            </p>
-                        @endif
-                        @if($offer->requirements)
-                            <p class="text-sm text-gray-600">
-                                <strong>Requisitos:</strong> {{ $offer->requirements }}
-                            </p>
-                        @endif
-
-                        @if($offer->estimated_duration_unit)
-                            <p class="text-sm text-gray-600">
-                                <strong>Duración:</strong>
-                                @if($offer->estimated_duration_unit === 'hasta finalizar')
-                                    Hasta finalizar
-                                @else
-                                    {{ $offer->estimated_duration_quantity }} {{ $offer->estimated_duration_unit }}
-                                @endif
-                            </p>
-                        @endif
-
-                        <a href="{{ route('offers.show', $offer) }}"
-                           class="mt-auto inline-block w-max px-4 py-2 text-sm font-medium text-white rounded-2xl bg-[var(--brand-primary)] hover:bg-[var(--brand-secondary)] transition">
-                            Ver detalles
-                        </a>
+                        {{-- Botón --}}
+                        <div class="mt-auto">
+                            <a href="{{ route('offers.show', $offer) }}"
+                               class="inline-block mt-1 px-2 py-2 text-sm font-sm text-white bg-sky-500 hover:bg-indigo-500 rounded-2xl transition">
+                                Ver detalles
+                            </a>
+                        </div>
                     </div>
-
-                @endforeach
-
-                <div class="mt-4">{{ $offers->links() }}</div>
+                @empty
+                    <p class="text-gray-600">No se encontraron ofertas.</p>
+                @endforelse
             </div>
 
-            {{-- Mapa --}}
-            <div class="w-full mt-4 relative z-map">
-                <div id="map" class="w-full min-h-[400px] rounded-2xl shadow border" style="height: 500px; position: relative;"></div>
+            {{-- Columna derecha: Mapa --}}
+            <div class="lg:col-span-1">
+                <div class="sticky top-24">
+                    <div id="map" class="w-full h-[550px] rounded-2xl shadow border z-map"></div>
+                </div>
             </div>
         </div>
+
+        {{-- Paginación --}}
+        <div class="mt-6">{{ $offers->links() }}</div>
     </div>
 @endsection
 
@@ -99,38 +125,19 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const offers = @json($offersForMap);
-
-            const map = L.map('map', {
-                scrollWheelZoom: true,
-                dragging: true,
-                tap: false,
-            }).setView([15.7196, -88.5941], 13);
+            const map = L.map('map').setView([15.7196, -88.5941], 13);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 18,
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
-            const bounds = [];
-
-            @foreach($offers as $offer)
-            @if($offer->lat && $offer->lng)
-            L.marker([{{ $offer->lat }}, {{ $offer->lng }}]).addTo(map)
-                .bindPopup(`
-                <strong>{{ Str::limit($offer->title, 50) }}</strong><br>
-                {{ $offer->location_text ?? 'Ubicación no especificada' }}<br>
-                <a href='{{ route('offers.show', $offer) }}'>Ver detalles</a>
-            `);
-            @endif
-                @endforeach
-
-            if (bounds.length) {
-                map.fitBounds(bounds, { padding: [40, x40] });
-            }
-
-            const mapElement = document.getElementById('map');
-            mapElement.style.position = 'relative';
+            offers.forEach(offer => {
+                if (offer.lat && offer.lng) {
+                    L.marker([offer.lat, offer.lng]).addTo(map)
+                        .bindPopup(`<strong>${offer.title}</strong><br>${offer.location_text}<br><a href='/offers/${offer.id}'>Ver detalles</a>`);
+                }
+            });
         });
     </script>
 @endpush
-

@@ -19,7 +19,7 @@
         <div class="col-span-2">
             <x-input-label for="category" :value="'Categoría *'" />
                 <select name="category" id="category"
-                        class="w-full border rounded-xl border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow hover:shadow-md">
+                        class="w-full border rounded-xl border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow hover:shadow-md" required>
                     <option value="">Selecciona una categoría</option>
                     @foreach([
                         'Limpieza','Pintura','Mudanza','Jardinería','Reparaciones',
@@ -57,7 +57,7 @@
                 <x-input-label for="duration_unit" :value="'Duración estimada *'"/>
                 <select name="duration_unit" id="duration_unit"
                         x-model="unit"
-                        class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow hover:shadow-md">
+                        class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow hover:shadow-md" required>
                     <option value="">Selecciona una unidad</option>
                     @foreach(['horas','días','semanas','meses','hasta finalizar'] as $unit)
                         <option value="{{ $unit }}"
@@ -73,20 +73,23 @@
                 <x-input-label for="duration_quantity" :value="'Cantidad'"/>
                 <input type="number" min="1" name="duration_quantity" id="duration_quantity"
                        x-bind:disabled="unit === 'hasta finalizar'"
+                       x-model="unit !== 'hasta finalizar' ? $refs.quantity.value : null"
+                       x-ref="quantity"
                        :value="old('duration_quantity', $offer->duration_quantity ?? '')"
                        class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow hover:shadow-md">
+
                 <x-input-error :messages="$errors->get('duration_quantity')" />
             </div>
         </div>
     </div>
 
-    {{-- Dirección + Pagos (con margen superior) --}}
+    {{-- Dirección + Pagos --}}
     <div class="grid grid-cols-6 gap-2 mt-4">
         {{-- Dirección --}}
         <div class="col-span-4">
             <x-input-label for="location_text" :value="'Dirección del trabajo *'" />
             <input type="text" name="location_text" id="location_text"
-                   class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow hover:shadow-md"
+                   class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow hover:shadow-md" required
                    placeholder="Ejemplo: 6a Calle 3-22, Barrio El Rastro, Puerto Barrios"
                    value="{{ old('location_text', $offer->location_text ?? '') }}">
             <x-input-error :messages="$errors->get('location_text')"/>
@@ -111,7 +114,7 @@
             <x-input-error :messages="$errors->get('pay_max')" />
         </div>
     </div>
-    {{-- Estado (solo edición) --}}
+    {{-- Estado --}}
     @if($editing)
         <x-input-label for="status" :value="'Estado'" />
         <select name="status" id="status"

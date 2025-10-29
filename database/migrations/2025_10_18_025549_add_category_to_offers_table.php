@@ -12,13 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('offers', function (Blueprint $table) {
-            $table->string('category', 50)->nullable()->after('title'); // Puedes cambiar nullable si lo haces obligatorio
+            $table->string('category', 50)->nullable()->after('title');
         });
     }
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('offers', function (Blueprint $table) {
