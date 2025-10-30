@@ -66,7 +66,6 @@ class OfferController extends Controller
             'duration_quantity' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        // Si la duración es "hasta f dejar cantidad como null
         if ($data['duration_unit'] === 'hasta finalizar') {
             $data['duration_quantity'] = null;
         }
@@ -81,9 +80,6 @@ class OfferController extends Controller
     public function show(Offer $offer)
     {
         $offer->load('user');
-        /*if (!auth()->check()) {
-           return redirect()->route('login')->with('message', 'Inicia sesión para ver los detalles de la oferta.');
-        }*/
         return view('offers.show', compact('offer'));
     }
     public function edit(Offer $offer)
@@ -109,35 +105,27 @@ class OfferController extends Controller
     }
     public function update(Request $request, Offer $offer)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'category' => 'required|string|max:255',
-            'requirements' => 'nullable|string',
-            'estimated_duration_unit' => 'nullable|string',
-            'estimated_duration_quantity' => 'nullable|numeric',
-            'location_text' => 'nullable|string',
-            'min_payment' => 'nullable|numeric',
-            'max_payment' => 'nullable|numeric',
-            'status' => 'nullable|string|in:open,closed',
+        abort_unless(auth()->id() === $offer->employer_id, 403);
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:120'],
+            'category' => ['required', 'string', 'max:50'],
+            'description' => ['required', 'string', 'min:10'],
+            'requirements' => ['nullable', 'string', 'max:255'],
+            'duration_unit' => ['required', 'in:horas,días,semanas,meses,hasta finalizar'],
+            'duration_quantity' => ['nullable', 'integer', 'min:1'],
+            'location_text' => ['required', 'string', 'max:120'],
+            'lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180'],
+            'pay_min' => ['nullable', 'integer', 'min:0'],
+            'pay_max' => ['nullable', 'integer', 'min:0', 'gte:pay_min'],
+            'status' => ['required', 'in:draft,open,hired,closed'],
         ]);
-
-        $offer->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'category' => $request->category,
-            'requirements' => $request->requirements,
-            'estimated_duration_unit' => $request->estimated_duration_unit,
-            'estimated_duration_quantity' => $request->estimated_duration_quantity,
-            'location_text' => $request->location_text,
-            'min_payment' => $request->min_payment,
-            'max_payment' => $request->max_payment,
-            'status' => $request->status,
-        ]);
-
+        if ($data['duration_unit'] === 'hasta finalizar') {
+            $data['duration_quantity'] = null;
+        }
+        $offer->update($data);
         return redirect()->route('employer.offers')->with('success', 'Oferta actualizada correctamente.');
     }
-
 
 
     public function destroy(\App\Models\Offer $offer) {
@@ -149,7 +137,6 @@ class OfferController extends Controller
     public function myOffers(Request $request)
     {
         abort_unless(auth()->user()->hasRole('employer'), 403);
-
         $q = $request->input('q');
         $status = $request->input('status');
         $category = $request->input('category');
@@ -165,7 +152,6 @@ class OfferController extends Controller
             ->when($category, fn($query) => $query->where('category', $category))
             ->latest()
             ->paginate(6);
-
         $categories = [
             'Limpieza', 'Pintura', 'Mudanza', 'Jardinería', 'Reparaciones',
             'Electricidad', 'Plomería', 'Cuidado de niños', 'Eventos',
@@ -178,9 +164,7 @@ class OfferController extends Controller
     public function candidates(Offer $offer)
     {
         abort_unless(auth()->user()->hasRole('employer') && auth()->id() === $offer->employer_id, 403);
-
         $applications = $offer->applications()->with(['employee.profile'])->get();
-
         return view('offers.candidates', compact('offer', 'applications'));
     }
 }

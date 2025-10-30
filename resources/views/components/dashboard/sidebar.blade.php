@@ -1,7 +1,7 @@
 <aside class="w-64 bg-white border-r p-6 rounded-xl">
     <div class="text-center mb-6">
         <img src="{{ auth()->user()->profile_photo_url ?? '/images/default-user.png' }}" class="w-20 h-20 rounded-full mx-auto mt-5 mb-10">
-        <p class="mt-2 font-semibold">{{ auth()->user()->full_name }}</p>
+        <p class="mt-2 font-semibold">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</p>
         @if(auth()->user()->is_verified)
             <p class="text-green-600 text-sm">✔ Verificado</p>
         @endif

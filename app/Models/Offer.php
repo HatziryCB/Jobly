@@ -12,14 +12,17 @@ class Offer extends Model
     protected $fillable = [
         'employer_id',
         'title',
+        'category',
         'description',
+        'requirements',
+        'duration_unit',
+        'duration_quantity',
         'location_text',
         'pay_min',
         'pay_max',
         'status',
         'lat',
         'lng',
-        'category',
     ];
     public function user()
     {

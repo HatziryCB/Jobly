@@ -19,7 +19,7 @@
         <div class="col-span-2">
             <x-input-label for="category" :value="'Categoría *'" />
                 <select name="category" id="category"
-                        class="w-full border rounded-xl border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow hover:shadow-md">
+                        class="w-full border rounded-xl border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow hover:shadow-md" required>
                     <option value="">Selecciona una categoría</option>
                     @foreach([
                         'Limpieza','Pintura','Mudanza','Jardinería','Reparaciones',
@@ -57,7 +57,7 @@
                 <x-input-label for="duration_unit" :value="'Duración estimada *'"/>
                 <select name="duration_unit" id="duration_unit"
                         x-model="unit"
-                        class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow hover:shadow-md">
+                        class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow hover:shadow-md" required>
                     <option value="">Selecciona una unidad</option>
                     @foreach(['horas','días','semanas','meses','hasta finalizar'] as $unit)
                         <option value="{{ $unit }}"
@@ -73,26 +73,35 @@
                 <x-input-label for="duration_quantity" :value="'Cantidad'"/>
                 <input type="number" min="1" name="duration_quantity" id="duration_quantity"
                        x-bind:disabled="unit === 'hasta finalizar'"
+                       x-model="unit !== 'hasta finalizar' ? $refs.quantity.value : null"
+                       x-ref="quantity"
                        :value="old('duration_quantity', $offer->duration_quantity ?? '')"
                        class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow hover:shadow-md">
+
                 <x-input-error :messages="$errors->get('duration_quantity')" />
             </div>
         </div>
     </div>
 
-    {{-- Dirección + Pagos (con margen superior) --}}
+    {{-- Dirección + Pagos --}}
     <div class="grid grid-cols-6 gap-2 mt-4">
         {{-- Dirección --}}
         <div class="col-span-4">
             <x-input-label for="location_text" :value="'Dirección del trabajo *'" />
             <input type="text" name="location_text" id="location_text"
-                   class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow hover:shadow-md"
+                   class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow hover:shadow-md" required
                    placeholder="Ejemplo: 6a Calle 3-22, Barrio El Rastro, Puerto Barrios"
                    value="{{ old('location_text', $offer->location_text ?? '') }}">
             <x-input-error :messages="$errors->get('location_text')"/>
             {{-- Coordenadas ocultas --}}
             <input type="hidden" name="lat" id="lat" value="{{ old('lat', $offer->lat ?? '') }}">
             <input type="hidden" name="lng" id="lng" value="{{ old('lng', $offer->lng ?? '') }}">
+
+            {{-- Mensaje de alerta si no hay permisos de ubicación --}}
+            <div id="geo-alert" class="mt-2 hidden text-sm text-red-600">
+                ⚠️ No se pudo obtener su ubicación. Asegúrate de permitir el acceso a la ubicación en tu navegador.
+            </div>
+
         </div>
         {{-- Pago mínimo --}}
         <div class="col-span-1">
@@ -111,7 +120,7 @@
             <x-input-error :messages="$errors->get('pay_max')" />
         </div>
     </div>
-    {{-- Estado (solo edición) --}}
+    {{-- Estado --}}
     @if($editing)
         <x-input-label for="status" :value="'Estado'" />
         <select name="status" id="status"
@@ -135,19 +144,32 @@
 {{-- Script de geolocalización --}}
 @push('scripts')
     <script>
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                console.log("Geolocation success:", position.coords.latitude, position.coords.longitude);
+        document.addEventListener("DOMContentLoaded", function () {
+            const latInput = document.getElementById('lat');
+            const lngInput = document.getElementById('lng');
+            const geoAlert = document.getElementById('geo-alert');
 
-                document.getElementById('lat').value = position.coords.latitude.toFixed(6);
-                document.getElementById('lng').value = position.coords.longitude.toFixed(6);
-            }, function(error) {
-                console.error("Geolocation error:", error.message);
-            });
-        } else {
-            console.warn("Geolocation not supported by this browser.");
-        }
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function (position) {
+                        latInput.value = position.coords.latitude.toFixed(6);
+                        lngInput.value = position.coords.longitude.toFixed(6);
+                        console.log("Coordenadas detectadas:", latInput.value, lngInput.value);
+                    },
+                    function (error) {
+                        console.error("Error al obtener ubicación:", error.message);
+                        geoAlert.classList.remove('hidden');
+                    }
+                );
+            } else {
+                console.warn("Este navegador no soporta geolocalización");
+                geoAlert.classList.remove('hidden');
+            }
+        });
+
     </script>
-
 @endpush
+
+
+
 

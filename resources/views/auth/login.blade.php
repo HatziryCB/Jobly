@@ -18,7 +18,6 @@
                 <h2 class="text-2xl font-bold mb-6 text-center">Inicio de sesión</h2>
 
                 <x-auth-session-status class="mb-4" :status="session('status')" />
-
                 <form method="POST" action="{{ route('login') }}" class="space-y-4">
                     @csrf
 

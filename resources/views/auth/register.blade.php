@@ -29,20 +29,35 @@
                 <x-auth-session-status class="mb-4" :status="session('status')" />
                 <form method="POST" action="{{ route('register') }}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     @csrf
-                    {{-- Nombre --}}
+                    {{-- Nombres --}}
+
                     <div>
-                        <label for="first_name" class="block text-sm font-medium mb-1">Nombres <span class="text-red-600">*</span></label>
+                        <label for="first_name" class="block text-sm font-medium mb-1">Primer nombre <span class="text-red-600">*</span></label>
                         <input id="first_name" name="first_name" type="text" value="{{ old('first_name') }}" required
                                class="w-full rounded-xl border-gray-300 focus:ring-[var(--brand-secondary)]">
                         @error('first_name')<p class="text-sm text-red-600 mt-1">{{ $message }}</p>@enderror
                     </div>
 
-                    {{-- Apellido --}}
                     <div>
-                        <label for="last_name" class="block text-sm font-medium mb-1">Apellidos <span class="text-red-600">*</span></label>
+                        <label for="second_name" class="block text-sm font-medium mb-1">Segundo nombre</label>
+                        <input id="second_name" name="second_name" type="text" value="{{ old('second_name') }}" required
+                               class="w-full rounded-xl border-gray-300 focus:ring-[var(--brand-secondary)]">
+                        @error('second_name')<p class="text-sm text-red-600 mt-1">{{ $message }}</p>@enderror
+                    </div>
+
+                    {{-- Apellidos --}}
+                    <div>
+                        <label for="last_name" class="block text-sm font-medium mb-1">Primer apellido <span class="text-red-600">*</span></label>
                         <input id="last_name" name="last_name" type="text" value="{{ old('last_name') }}" required
                                class="w-full rounded-xl border-gray-300 focus:ring-[var(--brand-secondary)]">
                         @error('last_name')<p class="text-sm text-red-600 mt-1">{{ $message }}</p>@enderror
+                    </div>
+
+                    <div>
+                        <label for="second_last_name" class="block text-sm font-medium mb-1">Segundo apellido</label>
+                        <input id="second_last_name" name="second_last_name" type="text" value="{{ old('second_last_name') }}" required
+                               class="w-full rounded-xl border-gray-300 focus:ring-[var(--brand-secondary)]">
+                        @error('second_last_name')<p class="text-sm text-red-600 mt-1">{{ $message }}</p>@enderror
                     </div>
 
                     {{-- Correo --}}

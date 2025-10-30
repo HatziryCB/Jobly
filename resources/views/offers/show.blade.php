@@ -47,7 +47,7 @@
         {{-- Categoría --}}
         @if($offer->category)
             <span class="inline-block bg-purple-100 text-purple-700 px-4 py-1 rounded-full text-sm font-semibold mb-4">
-{{ ucfirst($offer->category) }}
+            {{ ucfirst($offer->category) }}
 </span>
         @endif
 
@@ -60,7 +60,7 @@
                     <i class="fas fa-money-bill-wave text-green-500"></i>
                 </div>
                 <p class="font-bold text-lg">
-                    Q{{ $offer->min_payment ?? '--' }} - Q{{ $offer->max_payment ?? '--' }}
+                    Q{{ $offer->pay_min ?? '--' }} - Q{{ $offer->pay_max ?? '--' }}
                 </p>
                 <p class="text-sm text-gray-600">Pago estimado</p>
             </div>
@@ -79,13 +79,13 @@
             {{-- Duración estimada --}}
             <div>
                 <div class="text-4xl mb-2">
-                    <i class="fas fa-clock text-yellow-500"></i>
+                    <i class="fas fa-clock text-yellow-400"></i>
                 </div>
                 <p class="font-bold text-lg">
-                    @if ($offer->estimated_duration_unit)
-                        {{ $offer->estimated_duration_quantity ?? '1' }} {{ strtolower($offer->estimated_duration_unit) }}
+                    @if($offer->duration_unit === 'hasta finalizar')
+                        Hasta finalizar
                     @else
-                        --
+                        {{ $offer->duration_quantity }} {{ $offer->duration_unit }}
                     @endif
                 </p>
                 <p class="text-sm text-gray-600">Duración</p>

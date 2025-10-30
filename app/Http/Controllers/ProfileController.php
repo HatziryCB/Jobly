@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,44 +12,57 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    public function edit(Request $request): View
-    {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
-    }
     public function show(User $user)
     {
+        //$this->authorize('view', $user); // si usas policies, opcional
+        $user->load('profile');
+
         return view('profile.show', compact('user'));
     }
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function edit(User $user)
     {
-        $request->user()->fill($request->validated());
+        //$this->authorize('update', $user);
+        $user->load('profile');
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
-
-        $request->user()->save();
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return view('profile.edit', compact('user'));
     }
 
-    public function destroy(Request $request): RedirectResponse
+    public function update(Request $request, User $user)
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
+        $this->authorize('update', $user);
+
+        $validated = $request->validate([
+            'first_name' => 'required|string|max:50',
+            'second_name' => 'nullable|string|max:50',
+            'last_name' => 'required|string|max:50',
+            'second_last_name' => 'nullable|string|max:50',
+            'phone' => 'nullable|string|max:8',
+            'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'bio' => 'nullable|string|max:1000',
+            'experience' => 'nullable|string|max:2000',
+            'department' => 'nullable|string|max:80',
+            'municipality' => 'nullable|string|max:80',
+            'zone' => 'nullable|string|max:80',
+            'neighborhood' => 'nullable|string|max:80',
+            'birth_date' => 'nullable|date',
+            'gender' => 'nullable|in:male,female,other',
         ]);
 
-        $user = $request->user();
+        $user->update([
+            'first_name' => ucfirst($validated['first_name']),
+            'second_name' => ucfirst($validated['second_name'] ?? ''),
+            'last_name' => ucfirst($validated['last_name']),
+            'second_last_name' => ucfirst($validated['second_last_name'] ?? ''),
+            'phone' => $validated['phone'],
+        ]);
 
-        Auth::logout();
+        if ($request->hasFile('profile_picture')) {
+            $filename = $request->file('profile_picture')->store('profiles', 'public');
+            $user->profile->profile_picture = $filename;
+        }
 
-        $user->delete();
+        $user->profile->fill($validated)->save();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
+        return redirect()->route('profile.show', $user)->with('success', 'Perfil actualizado correctamente');
     }
 }

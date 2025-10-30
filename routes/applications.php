@@ -13,5 +13,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth', 'verified', 'role:employer'])->group(function () {
     Route::get('/offers/{offer}/candidates', [CandidateController::class, 'index'])->name('offers.candidates');
-    Route::get('/offers/{offer}/candidates/{user}', [CandidateController::class, 'show'])->name('offers.candidates.show');
+    Route::get('/offers/{offer}/candidates/{employee}', [CandidateController::class, 'show'])->name('offers.candidates.show');
 });
