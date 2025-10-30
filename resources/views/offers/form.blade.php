@@ -96,6 +96,12 @@
             {{-- Coordenadas ocultas --}}
             <input type="hidden" name="lat" id="lat" value="{{ old('lat', $offer->lat ?? '') }}">
             <input type="hidden" name="lng" id="lng" value="{{ old('lng', $offer->lng ?? '') }}">
+
+            {{-- Mensaje de alerta si no hay permisos de ubicación --}}
+            <div id="geo-alert" class="mt-2 hidden text-sm text-red-600">
+                ⚠️ No se pudo obtener su ubicación. Asegúrate de permitir el acceso a la ubicación en tu navegador.
+            </div>
+
         </div>
         {{-- Pago mínimo --}}
         <div class="col-span-1">
@@ -141,6 +147,7 @@
         document.addEventListener("DOMContentLoaded", function () {
             const latInput = document.getElementById('lat');
             const lngInput = document.getElementById('lng');
+            const geoAlert = document.getElementById('geo-alert');
 
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -151,12 +158,15 @@
                     },
                     function (error) {
                         console.error("Error al obtener ubicación:", error.message);
+                        geoAlert.classList.remove('hidden');
                     }
                 );
             } else {
                 console.warn("Este navegador no soporta geolocalización");
+                geoAlert.classList.remove('hidden');
             }
         });
+
     </script>
 @endpush
 
