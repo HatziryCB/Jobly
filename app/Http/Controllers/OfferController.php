@@ -114,13 +114,12 @@ class OfferController extends Controller
             'duration_unit' => ['required', 'in:horas,días,semanas,meses,hasta finalizar'],
             'duration_quantity' => ['nullable', 'integer', 'min:1'],
             'location_text' => ['required', 'string', 'max:120'],
-            'lat' => ['nullable', 'numeric', 'between:-90,90'], // <---
-            'lng' => ['nullable', 'numeric', 'between:-180,180'], // <---
+            'lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180'],
             'pay_min' => ['nullable', 'integer', 'min:0'],
             'pay_max' => ['nullable', 'integer', 'min:0', 'gte:pay_min'],
             'status' => ['required', 'in:draft,open,hired,closed'],
         ]);
-
         if ($data['duration_unit'] === 'hasta finalizar') {
             $data['duration_quantity'] = null;
         }
@@ -138,7 +137,6 @@ class OfferController extends Controller
     public function myOffers(Request $request)
     {
         abort_unless(auth()->user()->hasRole('employer'), 403);
-
         $q = $request->input('q');
         $status = $request->input('status');
         $category = $request->input('category');
@@ -154,7 +152,6 @@ class OfferController extends Controller
             ->when($category, fn($query) => $query->where('category', $category))
             ->latest()
             ->paginate(6);
-
         $categories = [
             'Limpieza', 'Pintura', 'Mudanza', 'Jardinería', 'Reparaciones',
             'Electricidad', 'Plomería', 'Cuidado de niños', 'Eventos',
@@ -167,9 +164,7 @@ class OfferController extends Controller
     public function candidates(Offer $offer)
     {
         abort_unless(auth()->user()->hasRole('employer') && auth()->id() === $offer->employer_id, 403);
-
         $applications = $offer->applications()->with(['employee.profile'])->get();
-
         return view('offers.candidates', compact('offer', 'applications'));
     }
 }

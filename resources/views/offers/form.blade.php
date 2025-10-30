@@ -138,19 +138,28 @@
 {{-- Script de geolocalización --}}
 @push('scripts')
     <script>
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                console.log("Geolocation success:", position.coords.latitude, position.coords.longitude);
+        document.addEventListener("DOMContentLoaded", function () {
+            const latInput = document.getElementById('lat');
+            const lngInput = document.getElementById('lng');
 
-                document.getElementById('lat').value = position.coords.latitude.toFixed(6);
-                document.getElementById('lng').value = position.coords.longitude.toFixed(6);
-            }, function(error) {
-                console.error("Geolocation error:", error.message);
-            });
-        } else {
-            console.warn("Geolocation not supported by this browser.");
-        }
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function (position) {
+                        latInput.value = position.coords.latitude.toFixed(6);
+                        lngInput.value = position.coords.longitude.toFixed(6);
+                        console.log("Coordenadas detectadas:", latInput.value, lngInput.value);
+                    },
+                    function (error) {
+                        console.error("Error al obtener ubicación:", error.message);
+                    }
+                );
+            } else {
+                console.warn("Este navegador no soporta geolocalización");
+            }
+        });
     </script>
-
 @endpush
+
+
+
 
