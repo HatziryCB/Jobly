@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Offer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class OfferController extends Controller
 {
@@ -141,7 +142,8 @@ class OfferController extends Controller
         $status = $request->input('status');
         $category = $request->input('category');
 
-        $offers = Offer::where('employer_id', auth()->id())
+        $offers = Offer::withCount('applications')
+            ->where('employer_id', auth()->id())
             ->when($q, fn($query) =>
             $query->where(function ($sub) use ($q) {
                 $sub->where('title', 'like', "%{$q}%")
@@ -151,6 +153,7 @@ class OfferController extends Controller
             ->withCount('applications')
             ->when($status, fn($query) => $query->where('status', $status))
             ->when($category, fn($query) => $query->where('category', $category))
+            ->orderByDesc('applications_count')
             ->latest()
             ->paginate(6);
         $categories = [
@@ -163,7 +166,7 @@ class OfferController extends Controller
     }
     public function candidates(Offer $offer)
     {
-        $this->authorize('update', $offer); // Solo el dueño puede ver candidatos
+        //$this->authorize('update', $offer);
 
         $candidates = $offer->applications()->with(['employee.profile'])->get();
         $selectedCandidate = $candidates->first()?->employee->profile;
