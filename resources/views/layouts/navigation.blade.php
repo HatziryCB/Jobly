@@ -59,7 +59,7 @@
                             <a href="{{ route('employer.dashboard') }}" class="block text-gray-700">Panel</a>
                             <a href="{{ route('profile.show', auth()->id()) }}" class="block text-gray-700">Mi perfil</a>
                             <a href="{{ route('employer.offers') }}" class="block text-gray-700">Mis ofertas</a>
-                            <a href="#" class="block text-gray-700">Postulaciones</a>
+
                             @elserole('employee')
                             <a href="{{ route('employee.dashboard') }}" class="block text-gray-700">Panel</a>
                             <a href="{{ route('profile.show', auth()->id()) }}" class="block text-gray-700">Mi perfil</a>
@@ -130,7 +130,7 @@
                         <a href="{{ route('employer.dashboard') }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Panel</a>
                         <a href="{{ route('profile.show', auth()->id()) }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Mi perfil</a>
                         <a href="{{ route('employer.offers') }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Mis ofertas</a>
-                        <a href="#" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Postulaciones</a>
+
                         @elserole('employee')
                         <a href="{{ route('employee.dashboard') }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Panel</a>
                         <a href="{{ route('profile.show', auth()->id()) }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Mi perfil</a>

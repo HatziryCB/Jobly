@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OfferController;
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/offers/{offer}', [OfferController::class, 'show'])->name('offers.show');
 
     Route::middleware('role:employer')->group(function () {
         Route::get('/offers/create', [OfferController::class, 'create'])->name('offers.create');
@@ -15,6 +14,8 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/offers/{offer}', [OfferController::class, 'update'])->name('offers.update');
         Route::delete('/offers/{offer}', [OfferController::class, 'destroy'])->name('offers.destroy');
         Route::get('/my-offers', [OfferController::class, 'myOffers'])->name('employer.offers');
+    });
+    Route::middleware('role:employee|employer')->group(function () {
         Route::get('/offers/{offer}', [OfferController::class, 'show'])->name('offers.show');
     });
 });

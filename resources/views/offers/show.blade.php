@@ -31,12 +31,13 @@
                 @if($offer->user)
                     {{ $offer->user->first_name }} {{ $offer->user->last_name }}
                 @else
-                    <a href="{{ route('profile.show', $offer->user->id) }}" class="text-indigo-600 underline">
+                    <a href="{{ route('profile.show', $offer->employer_id) }}" class="text-indigo-600 text-m underline">
                             {{ $offer->user->first_name }} {{ $offer->user->last_name }}
                     </a>
                     <span class="text-red-500">[Usuario no asignado]</span>
                 @endif
             </span>
+
             {{-- Calificación --}}
             <span class="text-yellow-500">
                 @for($i = 1; $i <= 5; $i++)
