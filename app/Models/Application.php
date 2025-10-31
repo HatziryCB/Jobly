@@ -11,7 +11,8 @@ class Application extends Model{
     protected $fillable=['offer_id','employee_id','message','status','accepted_at'];
     public function offer(){ return $this->belongsTo(Offer::class); }
 
-    public function employee(){
+    public function employee()
+    {
         return $this->belongsTo(User::class,'employee_id');
     }
     public function user()

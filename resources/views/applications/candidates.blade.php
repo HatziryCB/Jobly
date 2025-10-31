@@ -7,7 +7,8 @@
             @forelse ($candidates as $candidate)
                 <div class="bg-white rounded-2xl shadow p-4 cursor-pointer hover:shadow-md transition" onclick="window.location='{{ route('candidates.show', $candidate->id) }}'">
                     <div class="flex items-center gap-4">
-                        <img src="{{ $candidate->profile_photo_url ?? '/images/default-profile.png' }}" class="w-16 h-16 rounded-full object-cover border border-gray-300">
+                        <img src="{{ $candidate->employee->profile->profile_picture ? asset('storage/' . $candidate->employee->profile->profile_picture) : '/images/default-user.jpg' }}" class="w-16 h-16 rounded-full">
+
                         <div>
                             <h3 class="font-semibold text-lg text-gray-800">{{ $candidate->user->first_name }} {{ $candidate->user->last_name }}</h3>
                             <p class="text-sm text-gray-600">{{ $candidate->user->location_text ?? 'Ubicación no disponible' }}</p>
@@ -66,6 +67,11 @@
                     </div>
                 </div>
             @endisset
+                <form action="#" method="GET">
+                    <button type="submit" class="mt-4 inline-block bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">
+                        Contactar por Chat
+                    </button>
+                </form>
         </div>
     </div>
 @endsection

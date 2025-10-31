@@ -54,19 +54,21 @@
                         </button>
 
                         <div x-show="userMenu" class="pl-4 space-y-1 mt-2" x-transition>
-                            <a href="{{ route('profile.show', auth()->id()) }}" class="block text-gray-700">Mi perfil</a>
 
                             @role('employer')
                             <a href="{{ route('employer.dashboard') }}" class="block text-gray-700">Panel</a>
+                            <a href="{{ route('profile.show', auth()->id()) }}" class="block text-gray-700">Mi perfil</a>
                             <a href="{{ route('employer.offers') }}" class="block text-gray-700">Mis ofertas</a>
                             <a href="#" class="block text-gray-700">Postulaciones</a>
                             @elserole('employee')
                             <a href="{{ route('employee.dashboard') }}" class="block text-gray-700">Panel</a>
-                            <a href="#" class="block text-gray-700">Mis postulaciones</a>
+                            <a href="{{ route('profile.show', auth()->id()) }}" class="block text-gray-700">Mi perfil</a>
+                            <a href="{{ route('applications.index') }}" class="block text-gray-700">Mis postulaciones</a>
                             @endrole
 
                             @role('admin')
-                            <a href="{{ route('admin.dashboard') }}" class="block text-gray-700">Admin</a>
+                            <a href="{{ route('admin.dashboard') }}" class="block text-gray-700">Panel administrativo</a>
+                            <a href="{{ route('profile.show', auth()->id()) }}" class="block text-gray-700">Mi perfil</a>
                             @endrole
 
                             <span class="block text-gray-400 cursor-not-allowed">Reportes (próximamente)</span>
@@ -123,19 +125,21 @@
                     </button>
                     <div x-show="open" @click.outside="open = false"
                          class="absolute mt-2 w-56 bg-white shadow rounded p-2 z-[100]">
-                        <a href="{{ route('profile.show', auth()->id()) }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Mi perfil</a>
 
                         @role('employer')
                         <a href="{{ route('employer.dashboard') }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Panel</a>
+                        <a href="{{ route('profile.show', auth()->id()) }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Mi perfil</a>
                         <a href="{{ route('employer.offers') }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Mis ofertas</a>
                         <a href="#" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Postulaciones</a>
                         @elserole('employee')
                         <a href="{{ route('employee.dashboard') }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Panel</a>
-                        <a href="#" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Mis postulaciones</a>
+                        <a href="{{ route('profile.show', auth()->id()) }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Mi perfil</a>
+                        <a href="{{ route('applications.index') }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Mis postulaciones</a>
                         @endrole
 
                         @role('admin')
                         <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Admin</a>
+                        <a href="{{ route('profile.show', auth()->id()) }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Mi perfil</a>
                         @endrole
 
                         <a href="#" class="block px-3 py-2 hover:bg-gray-50 text-gray-400 cursor-not-allowed">Reportes (próximamente)</a>

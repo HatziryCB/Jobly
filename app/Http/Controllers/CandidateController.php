@@ -16,7 +16,7 @@ class CandidateController extends Controller
 
         $applications = $offer->applications()->with(['employee.profile'])->get();
 
-        return view('offers.candidates', compact('offer', 'applications'));
+        return view('applications.candidates', compact('offer', 'applications'));
     }
 
     public function show(Offer $offer, $employeeId)
