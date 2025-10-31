@@ -15,9 +15,7 @@ class ProfileController extends Controller
 {
     public function show(User $user)
     {
-        // Si no tiene perfil, se crea automáticamente
-        $user->loadMissing('profile'); // Carga relación si existe
-
+        $user->loadMissing('profile');
         if (!$user->profile) {
             $user->profile()->create();
             $user->refresh();
@@ -50,7 +48,7 @@ class ProfileController extends Controller
 
     public function update(Request $request, UserProfile $profile)
     {
-        // $this->authorize('update', $profile);
+        //$this->authorize('update', $profile);
 
         $validated = $request->validate([
             'profile_picture' => 'nullable|image|max:2048',

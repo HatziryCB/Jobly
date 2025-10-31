@@ -40,5 +40,4 @@ class UserProfile extends Model
             default => 'Desconocido',
         };
     }
-
 }

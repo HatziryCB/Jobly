@@ -16,7 +16,6 @@ class ApplicationController extends Controller
         if (!$user->hasRole('employee')) {
             abort(403, 'Solo los empleados pueden postular a ofertas.');
         }
-
         // Validación (mensaje opcional)
         $data = $request->validate([
             'message' => 'nullable|string|max:1000',
@@ -30,14 +29,12 @@ class ApplicationController extends Controller
         if ($alreadyApplied) {
             return back()->with('error', 'Ya te has postulado a esta oferta.');
         }
-
         // Crea la postulación
         Application::create([
             'offer_id' => $offer->id,
             'employee_id' => $user->id,
             'message' => $data['message'] ?? null,
         ]);
-
         return redirect()->route('applications.index')->with('success', '¡Postulación enviada exitosamente!');
     }
 
@@ -52,15 +49,12 @@ class ApplicationController extends Controller
     }
     public function accept(Application $application)
     {
-        $this->authorize('update', $application->offer);
-
+        //$this->authorize('update', $application->offer);
         $application->status = 'accepted';
-        $application->accepted_at = now();
         $application->save();
-
-        // Cerrar la oferta automáticamente
-        $application->offer->update(['status' => 'closed']);
-
-        return back()->with('success', 'Candidato aceptado y oferta cerrada.');
+        // Cambia estado de la oferta a "hired"
+        $application->offer->update(['status' => 'hired']);
+        return redirect()->back()->with('success', 'Candidato aceptado y oferta marcada como contratada.');
     }
+
 }
