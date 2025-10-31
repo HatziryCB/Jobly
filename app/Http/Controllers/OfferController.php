@@ -148,6 +148,7 @@ class OfferController extends Controller
                     ->orWhere('description', 'like', "%{$q}%");
             })
             )
+            ->withCount('applications')
             ->when($status, fn($query) => $query->where('status', $status))
             ->when($category, fn($query) => $query->where('category', $category))
             ->latest()
@@ -160,11 +161,13 @@ class OfferController extends Controller
 
         return view('employer.offers', compact('offers', 'categories', 'q', 'status', 'category'));
     }
-
     public function candidates(Offer $offer)
     {
-        abort_unless(auth()->user()->hasRole('employer') && auth()->id() === $offer->employer_id, 403);
-        $applications = $offer->applications()->with(['employee.profile'])->get();
-        return view('offers.candidates', compact('offer', 'applications'));
+        $this->authorize('update', $offer); // Solo el dueño puede ver candidatos
+
+        $candidates = $offer->applications()->with(['employee.profile'])->get();
+        $selectedCandidate = $candidates->first()?->employee->profile;
+
+        return view('applications.candidates', compact('candidates', 'selectedCandidate', 'offer'));
     }
 }

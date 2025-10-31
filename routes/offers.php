@@ -4,7 +4,8 @@ use App\Http\Controllers\CandidateController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OfferController;
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
+    Route::get('/offers/{offer}', [OfferController::class, 'show'])->name('offers.show');
 
     Route::middleware('role:employer')->group(function () {
         Route::get('/offers/create', [OfferController::class, 'create'])->name('offers.create');
