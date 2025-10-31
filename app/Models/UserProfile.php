@@ -31,4 +31,14 @@ class UserProfile extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function getVerificationStatusLabelAttribute(): string
+    {
+        return match ($this->verification_status) {
+            'pending' => 'Pendiente',
+            'verified' => 'Verificado',
+            'rejected' => 'Rechazado',
+            default => 'Desconocido',
+        };
+    }
+
 }

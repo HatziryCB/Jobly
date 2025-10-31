@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\User;
+use App\Models\UserProfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,55 +15,69 @@ class ProfileController extends Controller
 {
     public function show(User $user)
     {
-        //$this->authorize('view', $user); // si usas policies, opcional
-        $user->load('profile');
+        // Si no tiene perfil, se crea automáticamente
+        $user->loadMissing('profile'); // Carga relación si existe
+
+        if (!$user->profile) {
+            $user->profile()->create();
+            $user->refresh();
+        }
 
         return view('profile.show', compact('user'));
     }
     public function edit(User $user)
     {
-        //$this->authorize('update', $user);
-        $user->load('profile');
+        $profile = $user->profile ?? $user->profile()->create();
+        $categories = [
+            'Limpieza',
+            'Pintura',
+            'Mudanza',
+            'Jardinería',
+            'Reparaciones',
+            'Electricidad',
+            'Plomería',
+            'Cuidado de niños',
+            'Cuidado de adultos mayores',
+            'Eventos',
+            'Mecánica',
+            'Construcción',
+            'Ayuda temporal',
+            'Asistencia'
+        ];
 
-        return view('profile.edit', compact('user'));
+        return view('profile.edit', compact('profile', 'categories'));
     }
 
-    public function update(Request $request, User $user)
+    public function update(Request $request, UserProfile $profile)
     {
-        $this->authorize('update', $user);
+        // $this->authorize('update', $profile);
 
         $validated = $request->validate([
-            'first_name' => 'required|string|max:50',
-            'second_name' => 'nullable|string|max:50',
-            'last_name' => 'required|string|max:50',
-            'second_last_name' => 'nullable|string|max:50',
-            'phone' => 'nullable|string|max:8',
-            'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'profile_picture' => 'nullable|image|max:2048',
             'bio' => 'nullable|string|max:1000',
-            'experience' => 'nullable|string|max:2000',
-            'department' => 'nullable|string|max:80',
-            'municipality' => 'nullable|string|max:80',
-            'zone' => 'nullable|string|max:80',
-            'neighborhood' => 'nullable|string|max:80',
+            'experience' => 'nullable|string|max:1000',
+            'work_categories' => 'nullable|array',
+            'department' => 'nullable|string|max:100',
+            'municipality' => 'nullable|string|max:100',
+            'zone' => 'nullable|string|max:50',
+            'neighborhood' => 'nullable|string|max:100',
             'birth_date' => 'nullable|date',
             'gender' => 'nullable|in:male,female,other',
         ]);
 
-        $user->update([
-            'first_name' => ucfirst($validated['first_name']),
-            'second_name' => ucfirst($validated['second_name'] ?? ''),
-            'last_name' => ucfirst($validated['last_name']),
-            'second_last_name' => ucfirst($validated['second_last_name'] ?? ''),
-            'phone' => $validated['phone'],
-        ]);
-
+        // Manejo de imagen
         if ($request->hasFile('profile_picture')) {
-            $filename = $request->file('profile_picture')->store('profiles', 'public');
-            $user->profile->profile_picture = $filename;
+            $path = $request->file('profile_picture')->store('profiles', 'public');
+            $profile->profile_picture = $path;
         }
+        // Guarda categorías como JSON
+        $profile->work_categories = $validated['work_categories'] ?? [];
+        // Actualizar el resto
+        $profile->fill($validated);
+        $profile->save();
 
-        $user->profile->fill($validated)->save();
-
-        return redirect()->route('profile.show', $user)->with('success', 'Perfil actualizado correctamente');
+        return redirect()->route('profile.show', $profile->user_id)
+            ->with('success', 'Perfil actualizado exitosamente.');
     }
+
 }
