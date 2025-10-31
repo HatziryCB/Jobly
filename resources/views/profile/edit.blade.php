@@ -13,11 +13,19 @@
             <div>
                 <x-input-label for="profile_picture" :value="'Foto de Perfil'" />
                 @if($profile->profile_picture)
-                    <img src="{{ asset('storage/' . $profile->profile_picture) }}" alt="Foto actual" class="w-24 h-24 rounded-full mt-3">
+                    <img src="{{ $profile->profile_picture ? asset('storage/' . $profile->profile_picture) : asset('/images/default-profile.jpg') }}"
+                         class="w-24 h-24 rounded-full object-cover border" />
                 @endif
                 <input type="file" name="profile_picture" id="profile_picture" accept="image/*"
                        class="w-full rounded-2xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow">
                 <x-input-error :messages="$errors->get('profile_picture')" />
+                @if ($profile->profile_picture)
+                    <div class="mt-2">
+                        <input type="checkbox" name="remove_profile_picture" id="remove_profile_picture" value="1">
+                        <label for="remove_profile_picture" class="text-sm text-red-500">Eliminar foto de perfil</label>
+                    </div>
+                @endif
+
             </div>
             <!-- Estado de verificación -->
             <div class="flex flex-col justify-between">
@@ -94,7 +102,7 @@
             <div>
                 <x-input-label for="birth_date" :value="'Fecha de nacimiento *'" />
                 <x-text-input type="date" name="birth_date" id="birth_date" class="w-full" required
-                              :value="old('birth_date', $profile->birth_date)" />
+                              value="{{ old('birth_date', $profile->birth_date ? \Carbon\Carbon::parse($profile->birth_date)->format('Y-m-d') : '') }}" />
                 <x-input-error :messages="$errors->get('birth_date')" />
             </div>
             <div>

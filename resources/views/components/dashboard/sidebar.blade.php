@@ -18,7 +18,6 @@
         <a href="{{ route('employer.dashboard') }}" class="block py-2 px-3 rounded hover:bg-gray-100">Dashboard</a>
         <a href="{{ route('profile.show', auth()->id()) }}" class="block py-2 px-3 rounded hover:bg-gray-100">Mi Perfil</a>
         <a href="{{ route('employer.offers') }}" class="block py-2 px-3 rounded hover:bg-gray-100">Mis Ofertas</a>
-        <a href="#" class="block py-2 px-3 rounded hover:bg-gray-100">Postulaciones</a>
         @endrole
 
         @role('employee')

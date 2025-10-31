@@ -4,7 +4,7 @@
     <div class="flex flex-col lg:flex-row gap-6">
 
         {{-- Columna izquierda - resumen --}}
-        <div class="lg:w-1/3 bg-white p-6 rounded-xl shadow space-y-4">
+        <div class="lg:w-1/3 bg-white p-6 rounded-xl shadow space-y-6">
             <div class="text-center">
                 <img src="{{ $user->profile && $user->profile->profile_picture
                             ? asset('storage/' . $user->profile->profile_picture)
@@ -22,15 +22,22 @@
                 <p class="text-gray-500 text-sm">{{ $user->email }}</p>
             </div>
 
-            <div class="space-y-2">
+            <div class="space-y-2 mb-5">
                 <p><i class="fas fa-phone mr-2 text-amber-500"></i>{{ $user->phone ?? 'No especificado' }}</p>
-                <p><i class="fas fa-calendar-alt mr-2 text-sky-500"></i>{{ $user->profile->birth_date ?? 'No especificado' }}</p>
-                <p><i class="fas fa-venus-mars mr-2 text-purple-500"></i>{{ ucfirst($user->profile->gender ?? 'No especificado') }}</p>
-                <p><i class="fas fa-map-marker-alt mr-2 text-rose-500"></i>{{ $user->profile->department }}, {{ $user->profile->municipality }}</p>
+                <p><i class="fas fa-calendar-alt mr-2 text-sky-500"></i>{{ $user->profile->birth_date ? \Carbon\Carbon::parse($user->profile->birth_date)->format('d/m/Y') : 'No especificado' }}</p>
+                @php
+                    $generos = [
+                        'male' => 'Masculino',
+                        'female' => 'Femenino',
+                        'other' => 'Otro',
+                    ];
+                @endphp
+                <p><i class="fas fa-venus-mars mr-2 text-purple-500"></i>{{ $generos[$user->profile->gender] ?? 'No especificado' }}</p>
+                <p><i class="fas fa-map-marker-alt mr-2 text-rose-500"></i>{{ $user->profile->municipality }}, {{ $user->profile->department }} , zona {{ $user->profile->zone }}, {{ $user->profile->neighborhood }}.</p>
             </div>
 
             {{-- Botones --}}
-            <div class="flex justify-between mt-4">
+            <div class="flex justify-between mt-6">
                 <a href="{{ route('profile.edit', $user->id) }}" class="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 text-sm">
                     <i class="fas fa-edit mr-1"></i> Editar
                 </a>
