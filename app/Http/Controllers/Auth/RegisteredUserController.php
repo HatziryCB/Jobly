@@ -21,8 +21,10 @@ class RegisteredUserController extends Controller
     {
         // VALIDACIONES
         $validated = $request->validate([
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name'  => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:50'],
+            'second_name' => ['required', 'string', 'max:50'],
+            'last_name'  => ['required', 'string', 'max:50'],
+            'second_last_name'  => ['required', 'string', 'max:50'],
             'email'      => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'phone'      => ['nullable', 'digits:8'],
             'role'       => ['required', Rule::in(['employee', 'employer'])],
@@ -41,7 +43,9 @@ class RegisteredUserController extends Controller
         // CREACIÓN DE USUARIO
         $user = User::create([
             'first_name'        => ucfirst(strtolower($validated['first_name'])),
+            'second_name'        => ucfirst(strtolower($validated['second_name'])),
             'last_name'         => ucfirst(strtolower($validated['last_name'])),
+            'second_last_name'         => ucfirst(strtolower($validated['second_last_name'])),
             'email'             => strtolower($validated['email']),
             'phone'             => $validated['phone'],
             'password'          => Hash::make($validated['password']),

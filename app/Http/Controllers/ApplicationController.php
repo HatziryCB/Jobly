@@ -8,6 +8,58 @@ use Illuminate\Support\Facades\Auth;
 
 class ApplicationController extends Controller
 {
+    public function index(Request $request)
+    {
+        $user = auth()->user();
+
+        // 1. Obtener parámetros de la solicitud
+        $query = $request->get('q');
+        $category = $request->get('category');
+        $status = $request->get('status');
+
+        // 2. Definir la lista de categorías
+        $categories = [
+            'Limpieza', 'Pintura', 'Mudanza', 'Jardinería', 'Reparaciones', 'Electricidad',
+            'Plomería', 'Cuidado de niños', 'Cuidado de adultos mayores',
+            'Eventos', 'Mecánica', 'Construcción', 'Ayuda temporal', 'Asistencia'
+        ];
+
+        // 3. Iniciar la consulta
+        $applications = Application::with('offer')
+            ->where('employee_id', $user->id);
+
+        // 4. Aplicar filtros
+        if ($query) {
+            $applications->whereHas('offer', function ($q) use ($query) {
+                $q->where('title', 'like', '%' . $query . '%')
+                    ->orWhere('description', 'like', '%' . $query . '%');
+            });
+        }
+
+        if ($category) {
+            $applications->whereHas('offer', function ($q) use ($category) {
+                $q->where('category', $category);
+            });
+        }
+
+        if ($status) {
+            $applications->where('status', $status);
+        }
+
+        // 5. Obtener los resultados paginados, manteniendo los filtros en la URL
+        $applications = $applications->latest()
+            ->paginate(2)
+            ->withQueryString();
+
+
+        return view('employee.applications', [
+            'applications' => $applications,
+            'q'            => $query,
+            'category'     => $category,
+            'status'       => $status,
+            'categories'   => $categories,
+        ]);
+    }
     public function store(Request $request, Offer $offer)
     {
         $user = auth()->user();
@@ -35,18 +87,9 @@ class ApplicationController extends Controller
             'employee_id' => $user->id,
             'message' => $data['message'] ?? null,
         ]);
-        return redirect()->route('applications.index')->with('success', '¡Postulación enviada exitosamente!');
+        return redirect()->route('employee.applications')->with('success', '¡Postulación enviada exitosamente!');
     }
 
-    public function index()
-    {
-        $user = auth()->user();
-        $applications = Application::with('offer')
-            ->where('employee_id', $user->id)
-            ->latest()
-            ->get();
-        return view('applications.index', compact('applications'));
-    }
     public function accept(Application $application)
     {
         //$this->authorize('update', $application->offer);

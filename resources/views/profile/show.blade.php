@@ -6,10 +6,8 @@
         {{-- Columna izquierda - resumen --}}
         <div class="lg:w-1/3 bg-white p-6 rounded-xl shadow space-y-6">
             <div class="text-center">
-                <img src="{{ $user->profile && $user->profile->profile_picture
-                            ? asset('storage/' . $user->profile->profile_picture)
-                            : '/images/default-user.jpg' }}"
-                            class="w-24 h-24 rounded-full mx-auto">
+                <img src="{{ $user->profile->profile_picture ? asset('storage/' . $user->profile->profile_picture) : asset('images/default-user.jpg') }}"
+                     class="w-20 h-20 rounded-full mx-auto mt-5 mb-10 object-cover">
 
                 <h2 class="text-xl font-bold mt-2">
                     {{ $user->first_name }} {{ $user->last_name }}

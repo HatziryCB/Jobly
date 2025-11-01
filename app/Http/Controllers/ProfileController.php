@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -43,13 +44,15 @@ class ProfileController extends Controller
             'Asistencia'
         ];
 
-        return view('profile.edit', compact('profile', 'categories'));
+        return view('profile.edit', [
+            'profile' => $profile,
+            'categories' => $categories,
+            'user' => $user,
+        ]);
     }
 
     public function update(Request $request, UserProfile $profile)
     {
-        //$this->authorize('update', $profile);
-
         $validated = $request->validate([
             'profile_picture' => 'nullable|image|max:2048',
             'bio' => 'nullable|string|max:1000',
@@ -62,20 +65,27 @@ class ProfileController extends Controller
             'birth_date' => 'nullable|date',
             'gender' => 'nullable|in:male,female,other',
         ]);
-
-        // Manejo de imagen
+        //Elimina la imagen registrada
+        if ($request->has('remove_profile_picture') && $profile->profile_picture) {
+            Storage::disk('public')->delete($profile->profile_picture);
+            $profile->profile_picture = null;
+        }
+        // Subir nueva imagen
         if ($request->hasFile('profile_picture')) {
+            if ($profile->profile_picture) {
+                Storage::disk('public')->delete($profile->profile_picture);
+            }
+
             $path = $request->file('profile_picture')->store('profiles', 'public');
             $profile->profile_picture = $path;
         }
-        // Guarda categorías como JSON
+        // Guardar las categorías como array JSON
         $profile->work_categories = $validated['work_categories'] ?? [];
-        // Actualizar el resto
+
         $profile->fill($validated);
         $profile->save();
 
         return redirect()->route('profile.show', $profile->user_id)
             ->with('success', 'Perfil actualizado exitosamente.');
     }
-
 }
