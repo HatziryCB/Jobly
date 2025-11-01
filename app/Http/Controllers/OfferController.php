@@ -62,7 +62,7 @@ class OfferController extends Controller
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
             'pay_min' => ['nullable', 'integer', 'min:0'],
             'pay_max' => ['nullable', 'integer', 'min:0', 'gte:pay_min'],
-            'requirements' => ['nullable', 'string', 'max:255'],
+            'requirements' => ['nullable', 'string', 'max:1000'],
             'duration_unit' => ['required', 'in:horas,días,semanas,meses,hasta finalizar'],
             'duration_quantity' => ['nullable', 'integer', 'min:1'],
         ]);
@@ -110,8 +110,8 @@ class OfferController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:120'],
             'category' => ['required', 'string', 'max:50'],
-            'description' => ['required', 'string', 'min:10'],
-            'requirements' => ['nullable', 'string', 'max:255'],
+            'description' => ['required', 'string', 'min:30'],
+            'requirements' => ['nullable', 'string', 'max:1000'],
             'duration_unit' => ['required', 'in:horas,días,semanas,meses,hasta finalizar'],
             'duration_quantity' => ['nullable', 'integer', 'min:1'],
             'location_text' => ['required', 'string', 'max:120'],
@@ -155,13 +155,13 @@ class OfferController extends Controller
             ->when($category, fn($query) => $query->where('category', $category))
             ->orderByDesc('applications_count')
             ->latest()
-            ->paginate(6);
+            ->paginate(4)
+            ->withQueryString();
         $categories = [
             'Limpieza', 'Pintura', 'Mudanza', 'Jardinería', 'Reparaciones',
             'Electricidad', 'Plomería', 'Cuidado de niños', 'Eventos',
             'Mecánica', 'Construcción', 'Asistencia'
         ];
-
         return view('employer.offers', compact('offers', 'categories', 'q', 'status', 'category'));
     }
     public function candidates(Offer $offer)

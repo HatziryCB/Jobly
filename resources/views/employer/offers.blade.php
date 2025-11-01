@@ -32,7 +32,7 @@
             No tienes ofertas publicadas aún.
         </div>
     @else
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
             @foreach ($offers as $offer)
                 <div class="relative bg-white rounded-2xl shadow-md p-5 flex flex-col justify-between h-64 hover:shadow-lg transition-all duration-200">
                     <div>
@@ -42,10 +42,10 @@
                             </span>
                         @endif
                         <h3 class="text-lg font-semibold text-indigo-700">{{ $offer->title }}</h3>
-                        <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ Str::limit($offer->description, 100) }}</p>
+                        <p class="text-sm text-gray-600 mt-1 line-clamp-6">{{ Str::limit($offer->description, 300) }}</p>
 
                         <div class="mt-2 flex items-center gap-2">
-                            {{-- Categoría con color dinámico --}}
+                            {{-- Categoría con color --}}
                             @php
                                 $colors = [
                                     'Limpieza' => 'bg-pink-100 text-pink-700',
@@ -65,7 +65,7 @@
                             @endphp
                             <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $color }}">
                             {{ $offer->category }}
-                        </span>
+                            </span>
 
                             {{-- Estado --}}
                             <span class="px-3 py-1 rounded-full text-xs font-semibold
