@@ -63,7 +63,7 @@
                             @elserole('employee')
                             <a href="{{ route('employee.dashboard') }}" class="block text-gray-700">Panel</a>
                             <a href="{{ route('profile.show', auth()->id()) }}" class="block text-gray-700">Mi perfil</a>
-                            <a href="{{ route('applications.index') }}" class="block text-gray-700">Mis postulaciones</a>
+                            <a href="{{ route('employee.applications') }}" class="block text-gray-700">Mis postulaciones</a>
                             @endrole
 
                             @role('admin')
@@ -94,6 +94,8 @@
 
         <!-- Navegación escritorio -->
         <nav class="hidden md:flex items-center gap-6">
+            <a href="{{ route('home') }}" class="text-gray-700 hover:text-gray-900">Home</a>
+
             <a href="{{ route('offers.index') }}" class="text-gray-700 hover:text-gray-900">Explorar ofertas</a>
 
             @role('employer')
@@ -134,7 +136,7 @@
                         @elserole('employee')
                         <a href="{{ route('employee.dashboard') }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Panel</a>
                         <a href="{{ route('profile.show', auth()->id()) }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Mi perfil</a>
-                        <a href="{{ route('applications.index') }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Mis postulaciones</a>
+                        <a href="{{ route('employee.applications') }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Mis postulaciones</a>
                         @endrole
 
                         @role('admin')
