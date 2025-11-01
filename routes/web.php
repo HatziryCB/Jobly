@@ -22,8 +22,12 @@ Route::view('/about', 'about')->name('about');
 Route::view('/categories', 'services/categories')->name('categories');
 
 Route::get('/run-migrations', function () {
-    Artisan::call('migrate', ['--force' => true]);
-    return 'Migraciones ejecutadas.';
+    try {
+        Artisan::call('migrate', ['--force' => true]);
+        return 'Migraciones ejecutadas con éxito.';
+    } catch (\Exception $e) {
+        return 'Error al ejecutar migraciones: ' . $e->getMessage();
+    }
 });
 
 require __DIR__.'/auth.php';
