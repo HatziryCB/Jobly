@@ -29,6 +29,14 @@ Route::get('/run-migrations', function () {
         return 'Error al ejecutar migraciones: ' . $e->getMessage();
     }
 });
+Route::get('/debug-db', function () {
+    try {
+        \DB::connection()->getPdo();
+        return "✔ Conexión exitosa a la base de datos";
+    } catch (\Exception $e) {
+        return "❌ Error de conexión: " . $e->getMessage();
+    }
+});
 
 require __DIR__.'/auth.php';
 
