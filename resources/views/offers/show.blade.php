@@ -23,6 +23,7 @@
                     </form>
                 </div>
             @endcan
+
         </div>
 
         {{-- Empleador y calificación --}}
@@ -31,12 +32,13 @@
                 @if($offer->user)
                     {{ $offer->user->first_name }} {{ $offer->user->last_name }}
                 @else
-                    <a href="{{ route('profile.show', $offer->user->id) }}" class="text-indigo-600 hover:underline">
-                        {{ $offer->user->first_name }} {{ $offer->user->last_name }}
+                    <a href="{{ route('profile.show', $offer->employer_id) }}" class="text-indigo-600 text-m underline">
+                            {{ $offer->user->first_name }} {{ $offer->user->last_name }}
                     </a>
                     <span class="text-red-500">[Usuario no asignado]</span>
                 @endif
             </span>
+
             {{-- Calificación --}}
             <span class="text-yellow-500">
                 @for($i = 1; $i <= 5; $i++)
@@ -106,29 +108,12 @@
             </p>
         </div>
 
-        @can('update', $offer)
-            <div class="flex gap-2 mt-4">
-                <a href="{{ route('offers.edit', $offer) }}" class="text-blue-500 hover:text-blue-700">
-                    <i class="fas fa-edit fa-lg"></i> Editar
-                </a>
-                <form method="POST" action="{{ route('offers.destroy', $offer) }}" onsubmit="return confirm('¿Estás seguro de eliminar esta oferta?');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="text-red-500 hover:text-red-700">
-                        <i class="fas fa-trash-alt fa-lg"></i> Eliminar
-                    </button>
-                </form>
-            </div>
-        @endcan
         @role('employee')
-        <form action="#" method="POST" class="mt-6">
-            @csrf
-            <input type="hidden" name="offer_id" value="{{ $offer->id }}">
-            <textarea name="message" class="w-full rounded-xl mb-3" placeholder="Mensaje al empleador (opcional)"></textarea>
-            <button type="submit" class="bg-purple-500 text-white font-bold px-6 py-2 rounded-full hover:bg-purple-600 transition">
-                Postularme a esta oferta
-            </button>
-        </form>
+            <form method="POST" action="{{ route('applications.store', $offer->id) }}" class="mt-6">
+                @csrf
+                <textarea name="message" rows="3" class="w-full p-4 rounded-2xl border mb-3" placeholder="Dejale un mensaje al empleador..."></textarea>
+                <button type="submit" class="bg-purple-500 text-white font-bold px-4 py-2 rounded-full hover:bg-purple-600 transition">Postular</button>
+            </form>
         @endrole
     </div>
 @endsection

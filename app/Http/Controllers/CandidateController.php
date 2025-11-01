@@ -13,10 +13,8 @@ class CandidateController extends Controller
     public function index(Offer $offer)
     {
         abort_unless(auth()->user()->hasRole('employer') && auth()->id() === $offer->employer_id, 403);
-
-        $applications = $offer->applications()->with(['employee.profile'])->get();
-
-        return view('offers.candidates', compact('offer', 'applications'));
+        $candidates = $offer->applications()->with(['employee.profile'])->get();
+        return view('applications.candidates', compact('offer', 'candidates'));
     }
 
     public function show(Offer $offer, $employeeId)
@@ -28,6 +26,7 @@ class CandidateController extends Controller
             ->with('employee.profile')
             ->firstOrFail();
 
-        return view('offers.candidate_detail', compact('application'));
+        return view('applications.candidate_detail', compact('application', 'offer'));
     }
+
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Offer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class OfferController extends Controller
 {
@@ -61,7 +62,7 @@ class OfferController extends Controller
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
             'pay_min' => ['nullable', 'integer', 'min:0'],
             'pay_max' => ['nullable', 'integer', 'min:0', 'gte:pay_min'],
-            'requirements' => ['nullable', 'string', 'max:255'],
+            'requirements' => ['nullable', 'string', 'max:1000'],
             'duration_unit' => ['required', 'in:horas,días,semanas,meses,hasta finalizar'],
             'duration_quantity' => ['nullable', 'integer', 'min:1'],
         ]);
@@ -109,8 +110,8 @@ class OfferController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:120'],
             'category' => ['required', 'string', 'max:50'],
-            'description' => ['required', 'string', 'min:10'],
-            'requirements' => ['nullable', 'string', 'max:255'],
+            'description' => ['required', 'string', 'min:30'],
+            'requirements' => ['nullable', 'string', 'max:1000'],
             'duration_unit' => ['required', 'in:horas,días,semanas,meses,hasta finalizar'],
             'duration_quantity' => ['nullable', 'integer', 'min:1'],
             'location_text' => ['required', 'string', 'max:120'],
@@ -141,30 +142,35 @@ class OfferController extends Controller
         $status = $request->input('status');
         $category = $request->input('category');
 
-        $offers = Offer::where('employer_id', auth()->id())
+        $offers = Offer::withCount('applications')
+            ->where('employer_id', auth()->id())
             ->when($q, fn($query) =>
             $query->where(function ($sub) use ($q) {
                 $sub->where('title', 'like', "%{$q}%")
                     ->orWhere('description', 'like', "%{$q}%");
             })
             )
+            ->withCount('applications')
             ->when($status, fn($query) => $query->where('status', $status))
             ->when($category, fn($query) => $query->where('category', $category))
+            ->orderByDesc('applications_count')
             ->latest()
-            ->paginate(6);
+            ->paginate(4)
+            ->withQueryString();
         $categories = [
             'Limpieza', 'Pintura', 'Mudanza', 'Jardinería', 'Reparaciones',
             'Electricidad', 'Plomería', 'Cuidado de niños', 'Eventos',
             'Mecánica', 'Construcción', 'Asistencia'
         ];
-
         return view('employer.offers', compact('offers', 'categories', 'q', 'status', 'category'));
     }
-
     public function candidates(Offer $offer)
     {
-        abort_unless(auth()->user()->hasRole('employer') && auth()->id() === $offer->employer_id, 403);
-        $applications = $offer->applications()->with(['employee.profile'])->get();
-        return view('offers.candidates', compact('offer', 'applications'));
+        //$this->authorize('update', $offer);
+
+        $candidates = $offer->applications()->with(['employee.profile'])->get();
+        $selectedCandidate = $candidates->first()?->employee->profile;
+
+        return view('applications.candidates', compact('candidates', 'selectedCandidate', 'offer'));
     }
 }

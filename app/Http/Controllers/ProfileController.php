@@ -4,65 +4,88 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\User;
+use App\Models\UserProfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
     public function show(User $user)
     {
-        //$this->authorize('view', $user); // si usas policies, opcional
-        $user->load('profile');
+        $user->loadMissing('profile');
+        if (!$user->profile) {
+            $user->profile()->create();
+            $user->refresh();
+        }
 
         return view('profile.show', compact('user'));
     }
     public function edit(User $user)
     {
-        //$this->authorize('update', $user);
-        $user->load('profile');
+        $profile = $user->profile ?? $user->profile()->create();
+        $categories = [
+            'Limpieza',
+            'Pintura',
+            'Mudanza',
+            'Jardinería',
+            'Reparaciones',
+            'Electricidad',
+            'Plomería',
+            'Cuidado de niños',
+            'Cuidado de adultos mayores',
+            'Eventos',
+            'Mecánica',
+            'Construcción',
+            'Ayuda temporal',
+            'Asistencia'
+        ];
 
-        return view('profile.edit', compact('user'));
+        return view('profile.edit', [
+            'profile' => $profile,
+            'categories' => $categories,
+            'user' => $user,
+        ]);
     }
 
-    public function update(Request $request, User $user)
+    public function update(Request $request, UserProfile $profile)
     {
-        $this->authorize('update', $user);
-
         $validated = $request->validate([
-            'first_name' => 'required|string|max:50',
-            'second_name' => 'nullable|string|max:50',
-            'last_name' => 'required|string|max:50',
-            'second_last_name' => 'nullable|string|max:50',
-            'phone' => 'nullable|string|max:8',
-            'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'profile_picture' => 'nullable|image|max:2048',
             'bio' => 'nullable|string|max:1000',
-            'experience' => 'nullable|string|max:2000',
-            'department' => 'nullable|string|max:80',
-            'municipality' => 'nullable|string|max:80',
-            'zone' => 'nullable|string|max:80',
-            'neighborhood' => 'nullable|string|max:80',
+            'experience' => 'nullable|string|max:1000',
+            'work_categories' => 'nullable|array',
+            'department' => 'nullable|string|max:100',
+            'municipality' => 'nullable|string|max:100',
+            'zone' => 'nullable|string|max:50',
+            'neighborhood' => 'nullable|string|max:100',
             'birth_date' => 'nullable|date',
             'gender' => 'nullable|in:male,female,other',
         ]);
-
-        $user->update([
-            'first_name' => ucfirst($validated['first_name']),
-            'second_name' => ucfirst($validated['second_name'] ?? ''),
-            'last_name' => ucfirst($validated['last_name']),
-            'second_last_name' => ucfirst($validated['second_last_name'] ?? ''),
-            'phone' => $validated['phone'],
-        ]);
-
-        if ($request->hasFile('profile_picture')) {
-            $filename = $request->file('profile_picture')->store('profiles', 'public');
-            $user->profile->profile_picture = $filename;
+        //Elimina la imagen registrada
+        if ($request->has('remove_profile_picture') && $profile->profile_picture) {
+            Storage::disk('public')->delete($profile->profile_picture);
+            $profile->profile_picture = null;
         }
+        // Subir nueva imagen
+        if ($request->hasFile('profile_picture')) {
+            if ($profile->profile_picture) {
+                Storage::disk('public')->delete($profile->profile_picture);
+            }
 
-        $user->profile->fill($validated)->save();
+            $path = $request->file('profile_picture')->store('profiles', 'public');
+            $profile->profile_picture = $path;
+        }
+        // Guardar las categorías como array JSON
+        $profile->work_categories = $validated['work_categories'] ?? [];
 
-        return redirect()->route('profile.show', $user)->with('success', 'Perfil actualizado correctamente');
+        $profile->fill($validated);
+        $profile->save();
+
+        return redirect()->route('profile.show', $profile->user_id)
+            ->with('success', 'Perfil actualizado exitosamente.');
     }
 }

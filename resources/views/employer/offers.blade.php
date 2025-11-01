@@ -32,15 +32,20 @@
             No tienes ofertas publicadas aún.
         </div>
     @else
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
             @foreach ($offers as $offer)
-                <div class="bg-white rounded-2xl shadow-md p-5 flex flex-col justify-between h-64 hover:shadow-lg transition-all duration-200">
+                <div class="relative bg-white rounded-2xl shadow-md p-5 flex flex-col justify-between h-64 hover:shadow-lg transition-all duration-200">
                     <div>
+                        @if ($offer->applications_count > 0)
+                            <span class="absolute top-3 right-3 bg-yellow-200 text-yellow-600 text-xs font-semibold px-2.5 py-0.5 rounded-2xl shadow">
+                                {{ $offer->applications_count }} postulante{{ $offer->applications_count > 1 ? 's' : '' }}
+                            </span>
+                        @endif
                         <h3 class="text-lg font-semibold text-indigo-700">{{ $offer->title }}</h3>
-                        <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ Str::limit($offer->description, 100) }}</p>
+                        <p class="text-sm text-gray-600 mt-1 line-clamp-6">{{ Str::limit($offer->description, 300) }}</p>
 
                         <div class="mt-2 flex items-center gap-2">
-                            {{-- Categoría con color dinámico --}}
+                            {{-- Categoría con color --}}
                             @php
                                 $colors = [
                                     'Limpieza' => 'bg-pink-100 text-pink-700',
@@ -60,7 +65,7 @@
                             @endphp
                             <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $color }}">
                             {{ $offer->category }}
-                        </span>
+                            </span>
 
                             {{-- Estado --}}
                             <span class="px-3 py-1 rounded-full text-xs font-semibold
@@ -73,14 +78,14 @@
                         </div>
                     </div>
 
-                    {{-- Pago y acciones fijas al fondo --}}
+                    {{-- Pago y acciones --}}
                     <div class="flex justify-between items-center mt-4">
                         <p class="text-green-600 font-semibold">
                             Q{{ $offer->pay_min ?? 0 }} - Q{{ $offer->pay_max ?? 0 }}
                         </p>
                         <div class="flex gap-2">
-                            <a href="{{ route('offers.candidates', $offer) }}" class="bg-blue-400 hover:bg-blue-500 text-white px-2 py-1 rounded-2xl text-xs">
-                                Candidatos
+                            <a href="{{ route('offers.candidates', $offer->id) }}" class="bg-blue-400 hover:bg-blue-500 text-white px-2 py-1 rounded-2xl text-xs">
+                                Ver candidatos
                             </a>
                             <a href="{{ route('offers.show', $offer) }}" class="text-indigo-300 hover:text-indigo-400">
                                 <i class="fa-regular fa-eye text-lg"></i>
