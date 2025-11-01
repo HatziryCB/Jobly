@@ -23,6 +23,7 @@
                     </form>
                 </div>
             @endcan
+
         </div>
 
         {{-- Empleador y calificación --}}
@@ -107,20 +108,6 @@
             </p>
         </div>
 
-        @can('update', $offer)
-            <div class="flex gap-2 mt-4">
-                <a href="{{ route('offers.edit', $offer) }}" class="text-blue-500 hover:text-blue-700">
-                    <i class="fas fa-edit fa-lg"></i> Editar
-                </a>
-                <form method="POST" action="{{ route('offers.destroy', $offer) }}" onsubmit="return confirm('¿Estás seguro de eliminar esta oferta?');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="text-red-500 hover:text-red-700">
-                        <i class="fas fa-trash-alt fa-lg"></i> Eliminar
-                    </button>
-                </form>
-            </div>
-        @endcan
         @role('employee')
             <form method="POST" action="{{ route('applications.store', $offer->id) }}" class="mt-6">
                 @csrf
