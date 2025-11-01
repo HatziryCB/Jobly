@@ -4,8 +4,8 @@ use App\Http\Controllers\CandidateController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::post('/offers/{offer}/apply', [ApplicationController::class, 'store'])->name('applications.store');
-    Route::get('/my-applications', [ApplicationController::class, 'index'])->name('applications.index');
+    Route::post('/employee/{offer}/apply', [ApplicationController::class, 'store'])->name('applications.store');
+    Route::get('/my-applications', [ApplicationController::class, 'index'])->name('employee.applications');
     Route::post('/applications/{application}/accept', [ApplicationController::class, 'accept'])->name('applications.accept');
 });
 
