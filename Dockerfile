@@ -1,4 +1,4 @@
-# Imagen base de Laravel
+# Imagen base oficial de PHP con FPM
 FROM php:8.2-fpm
 
 # Instalar dependencias del sistema
@@ -7,41 +7,42 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    locales \
+    libzip-dev \
+    libonig-dev \
+    libxml2-dev \
+    libssl-dev \
+    libcurl4-openssl-dev \
+    libsqlite3-dev \
+    libpq-dev \
     zip \
-    jpegoptim optipng pngquant gifsicle \
-    vim \
     unzip \
     git \
     curl \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    libssl-dev \
-    libcurl4-openssl-dev \
-    libsqlite3-dev
+    vim \
+    jpegoptim optipng pngquant gifsicle \
+    locales
 
-# Configurar extensiones de PHP necesarias
-RUN docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl bcmath
+# Instalar extensiones de PHP (incluye PostgreSQL)
+RUN docker-php-ext-install pdo pdo_pgsql pgsql pdo_mysql mbstring zip exif pcntl bcmath
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Crear directorio de trabajo
+# Establecer el directorio de trabajo
 WORKDIR /var/www
 
 # Copiar archivos del proyecto
 COPY . .
 
-# Instalar dependencias de PHP
+# Instalar dependencias PHP del proyecto
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
-# Asignar permisos
+# Asignar permisos adecuados
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 755 /var/www/storage
 
-# Exponer el puerto
+# Exponer puerto 8000 (Laravel sirve en este puerto)
 EXPOSE 8000
 
-# Comando para ejecutar el servidor Laravel
+# Comando para iniciar Laravel
 CMD php artisan serve --host=0.0.0.0 --port=8000
