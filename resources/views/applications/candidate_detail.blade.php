@@ -4,10 +4,15 @@
     <div class="bg-white rounded-2xl shadow p-6">
         <div class="flex items-center justify-between border-b pb-4 mb-4">
             <div class="flex items-center gap-6">
-                <img src="{{ $application->employee->profile->profile_picture
-                ? asset('storage/' . $application->employee->profile->profile_picture)
-                : '/images/default-profile.png' }}"
-                     class="w-24 h-24 rounded-full object-cover border">
+                @php
+                    $profile = auth()->user()->profile;
+                @endphp
+
+                <img src="{{ $profile && $profile->profile_picture
+                            ? asset('storage/' . $profile->profile_picture)
+                            : asset('images/default-user.jpg') }}"
+                             alt="Foto de perfil"
+                             class="w-20 h-20 rounded-full object-cover border mx-auto" />
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800">
                         {{ $application->employee->first_name }} {{ $application->employee->last_name }}
