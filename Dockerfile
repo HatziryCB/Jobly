@@ -44,8 +44,5 @@ RUN chown -R www-data:www-data /var/www \
 # Exponer puerto 8000 (Laravel sirve en este puerto)
 EXPOSE 8000
 
-# Limpiar caché antes de iniciar
-RUN php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan view:clear
-
 # Comando para iniciar Laravel
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
