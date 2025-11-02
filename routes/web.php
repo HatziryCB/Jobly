@@ -25,12 +25,9 @@ Route::view('/categories', 'services/categories')->name('categories');
 Route::get('/run-migrations', function () {
     try {
         Artisan::call('migrate', ['--force' => true]);
-        return '✅ Migraciones ejecutadas correctamente.';
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => '❌ Error al ejecutar migraciones.',
-            'message' => $e->getMessage(),
-        ], 500);
+        return 'Migraciones ejecutadas con éxito.';
+    } catch (\Throwable $e) {
+        return response('Error: ' . $e->getMessage(), 500);
     }
 });
 
