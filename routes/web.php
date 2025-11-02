@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\OfferController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 
 Route::get('/', function(){
     return view('home');
@@ -38,6 +39,11 @@ Route::get('/debug-db', function () {
     } catch (\Exception $e) {
         return '❌ Error de conexión: ' . $e->getMessage();
     }
+});
+
+Route::get('/check-tables', function () {
+    $tables = DB::select('SELECT tablename FROM pg_tables WHERE schemaname = ?', ['public']);
+    return response()->json($tables);
 });
 
 require __DIR__.'/auth.php';
