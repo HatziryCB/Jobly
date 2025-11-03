@@ -1,25 +1,44 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+@extends('layouts.guest')
+@section('title', 'Recuperar contraseña')
+
+@section('content')
+    <div class="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-10">
+        <div class="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md">
+            <h1 class="text-2xl font-bold text-center text-[var(--brand-primary)] mb-4">
+                Recuperar contraseña
+            </h1>
+
+            <p class="text-gray-600 text-sm text-center mb-6">
+                Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
+            </p>
+
+            @if (session('status'))
+                <div class="mb-4 text-green-600 text-sm text-center font-medium">
+                    {{ session('status') }}
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('password.email') }}" class="space-y-4">
+                @csrf
+                <div>
+                    <label for="email" class="block text-sm font-medium mb-1">Correo electrónico</label>
+                    <input id="email" type="email" name="email" required autofocus
+                           class="w-full rounded-xl border-gray-300 focus:ring-[var(--brand-secondary)]">
+                    @error('email')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-[var(--brand-primary)] hover:bg-[var(--brand-secondary)] text-white font-semibold py-2.5 rounded-xl transition">
+                    Enviar enlace de recuperación
+                </button>
+
+                <p class="text-center text-sm mt-4">
+                    ¿Recordaste tu contraseña?
+                    <a href="{{ route('login') }}" class="text-[var(--brand-primary)] hover:underline font-medium">Inicia sesión</a>
+                </p>
+            </form>
+        </div>
     </div>
-
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
-
-    <form method="POST" action="{{ route('password.email') }}">
-        @csrf
-
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+@endsection

@@ -1,39 +1,51 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('password.store') }}">
-        @csrf
+@extends('layouts.guest')
+@section('title', 'Restablecer contraseña')
 
-        <!-- Password Reset Token -->
-        <input type="hidden" name="token" value="{{ $request->route('token') }}">
+@section('content')
+    <div class="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-10">
+        <div class="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md">
+            <h1 class="text-2xl font-bold text-center text-[var(--brand-primary)] mb-4">
+                Restablecer contraseña
+            </h1>
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <p class="text-gray-600 text-sm text-center mb-6">
+                Ingresa tu nueva contraseña para continuar.
+            </p>
+
+            <form method="POST" action="{{ route('password.store') }}" class="space-y-4">
+                @csrf
+
+                <input type="hidden" name="token" value="{{ $request->route('token') }}">
+
+                <div>
+                    <label for="email" class="block text-sm font-medium mb-1">Correo electrónico</label>
+                    <input id="email" type="email" name="email" value="{{ old('email', $request->email) }}" required
+                           class="w-full rounded-xl border-gray-300 focus:ring-[var(--brand-secondary)]">
+                    @error('email')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium mb-1">Nueva contraseña</label>
+                    <input id="password" type="password" name="password" required
+                           class="w-full rounded-xl border-gray-300 focus:ring-[var(--brand-secondary)]">
+                    @error('password')
+                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="password_confirmation" class="block text-sm font-medium mb-1">Confirmar contraseña</label>
+                    <input id="password_confirmation" type="password" name="password_confirmation" required
+                           class="w-full rounded-xl border-gray-300 focus:ring-[var(--brand-secondary)]">
+                </div>
+
+                <button type="submit"
+                        class="w-full bg-[var(--brand-primary)] hover:bg-[var(--brand-secondary)] text-white font-semibold py-2.5 rounded-xl transition">
+                    Guardar nueva contraseña
+                </button>
+            </form>
         </div>
-
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                                type="password"
-                                name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+    </div>
+@endsection
