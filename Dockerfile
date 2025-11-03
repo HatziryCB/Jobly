@@ -1,42 +1,42 @@
-# Imagen base oficial de PHP con FPM
+# Etapa 1: compilación de assets (Node)
+FROM node:20-alpine as build
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY resources ./resources
+COPY vite.config.js ./
+RUN npm run build
+
+
+# Etapa 2: aplicación Laravel (PHP)
 FROM php:8.2-fpm
 
 # Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpng-dev libjpeg-dev libfreetype6-dev \
-    libzip-dev libonig-dev libxml2-dev libssl-dev libcurl4-openssl-dev libsqlite3-dev libpq-dev \
-    zip unzip git curl vim jpegoptim optipng pngquant gifsicle locales && \
+    libpng-dev libjpeg-dev libfreetype6-dev libzip-dev libpq-dev zip unzip git curl && \
+    docker-php-ext-install pdo pdo_pgsql bcmath gd && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Instalar extensiones PHP (incluye PostgreSQL)
-RUN docker-php-ext-install pdo pdo_pgsql pgsql mbstring zip exif pcntl bcmath
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Crear directorio de trabajo
 WORKDIR /var/www
 
-# Copiar archivos del proyecto (sin node_modules ni vendor gracias a .dockerignore)
+# Copiar archivos del proyecto
 COPY . .
 
-# Instalar dependencias PHP
+# Copiar el build de Node desde la primera etapa
+COPY --from=build /app/public/build ./public/build
+
+# Instalar dependencias PHP (sin dev)
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
-# Instalar Node.js 20
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs
-
-# Instalar dependencias de frontend y compilar Vite (al final para conservar build)
-RUN npm ci && npm run build
-
-# Crear carpetas necesarias y dar permisos
+# Crear carpetas necesarias
 RUN mkdir -p /var/www/storage/framework/{cache,sessions,views} && \
-    chown -R www-data:www-data /var/www/storage /var/www/public && \
+    chown -R www-data:www-data /var/www && \
     chmod -R 775 /var/www/storage /var/www/public
 
-# Exponer puerto
 EXPOSE 8000
 
-# Comando para iniciar Laravel
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
