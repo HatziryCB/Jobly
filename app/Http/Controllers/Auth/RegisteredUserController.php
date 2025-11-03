@@ -22,10 +22,10 @@ class RegisteredUserController extends Controller
         // VALIDACIONES
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:50'],
-            'second_name' => ['required', 'string', 'max:50'],
+            'second_name' => ['nullable', 'string', 'max:50'],
             'last_name'  => ['required', 'string', 'max:50'],
-            'second_last_name'  => ['required', 'string', 'max:50'],
-            'email'      => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'second_last_name'  => ['nullable', 'string', 'max:50'],
+            'email'      => ['required', 'string', 'email', 'max:100', 'unique:users,email'],
             'phone'      => ['nullable', 'digits:8'],
             'role'       => ['required', Rule::in(['employee', 'employer'])],
             'password'   => [
@@ -39,19 +39,18 @@ class RegisteredUserController extends Controller
             ],
             'terms'      => ['accepted'],
         ]);
-
-        // CREACIÓN DE USUARIO
         $user = User::create([
             'first_name'        => ucfirst(strtolower($validated['first_name'])),
-            'second_name'        => ucfirst(strtolower($validated['second_name'])),
+            'second_name'       => isset($validated['second_name']) ? ucfirst(strtolower($validated['second_name'])) : null,
             'last_name'         => ucfirst(strtolower($validated['last_name'])),
-            'second_last_name'         => ucfirst(strtolower($validated['second_last_name'])),
+            'second_last_name'  => isset($validated['second_last_name']) ? ucfirst(strtolower($validated['second_last_name'])) : null,
             'email'             => strtolower($validated['email']),
-            'phone'             => $validated['phone'],
+            'phone'             => $validated['phone'] ?? null,
             'password'          => Hash::make($validated['password']),
             'tos_accepted'      => true,
             'tos_accepted_at'   => now(),
         ]);
+
         // ASIGNAR ROL CON SPATIE
         $user->assignRole($request->input('role'));
 
@@ -59,11 +58,20 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
         Auth::login($user);
 
-        // REDIRECCIÓN SEGÚN ROL
-        return redirect()->intended(
-            $validated['role'] === 'employer'
-                ? route('offers.create')
-                : route('offers.index')
-        );
+        return redirect()->route('verification.notice');
     }
+    private function redirectToRole(User $user)
+    {
+        if ($user->hasRole('employer')) {
+            return redirect()->route('employer.dashboard');
+        }
+        if ($user->hasRole('employee')) {
+            return redirect()->route('employee.dashboard');
+        }
+        if ($user->hasRole('admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+        return redirect()->route('offers.index');
+    }
+
 }
