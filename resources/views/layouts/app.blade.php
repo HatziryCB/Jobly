@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/x-icon" href="{{ asset('images/pin-sf.png') }}">
 
-    <title>@yield('title', config('app.name', 'Laravel'))</title>
+    <title>@yield('title', config('app.name', 'Jobly'))</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -14,8 +14,17 @@
 
     <!-- Styles & Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+        body { opacity: 0; transition: opacity 0.2s ease-in; }
+        html[data-vite-dev-id] body, body.loaded { opacity: 1; }
+    </style>
+    <script>
+        window.addEventListener('load', () => document.body.classList.add('loaded'));
+    </script>
+
 </head>
-<body class="font-sans antialiased">
+<body class="font-sans antialiased bg-[var(--bg)] min-h-screen flex flex-col">
 <div class="min-h-screen bg-gray-50">
     @include('layouts.navigation')
 

@@ -13,9 +13,17 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        if (!file_exists(storage_path('framework/views'))) {
-            mkdir(storage_path('framework/views'), 0755, true);
+        // Crear rutas necesarias para cache y sesiones si no existen
+        $paths = [
+            storage_path('framework/cache'),
+            storage_path('framework/sessions'),
+            storage_path('framework/views'),
+        ];
+
+        foreach ($paths as $path) {
+            if (!file_exists($path)) {
+                mkdir($path, 0755, true);
+            }
         }
     }
-
 }
