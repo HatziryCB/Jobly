@@ -42,8 +42,15 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
 COPY package*.json ./
 RUN npm install && npm run build
 
+# Instalar Node.js y npm
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs
+
 # Instalar dependencias PHP del proyecto
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+# Instalar dependencias de frontend y compilar Vite
+RUN npm install && npm run build
 
 # Asignar permisos adecuados
 RUN chown -R www-data:www-data /var/www \
