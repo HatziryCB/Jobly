@@ -36,5 +36,10 @@ RUN chown -R www-data:www-data /var/www \
 # Exponer puerto
 EXPOSE 8000
 
+# Crear carpetas necesarias y dar permisos
+RUN mkdir -p /var/www/storage/framework/{cache,sessions,views} && \
+    chown -R www-data:www-data /var/www/storage && \
+    chmod -R 775 /var/www/storage
+
 # Comando para iniciar la app
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
