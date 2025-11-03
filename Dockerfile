@@ -18,28 +18,25 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Crear directorio de trabajo
 WORKDIR /var/www
 
-# Copiar archivos del proyecto
+# Copiar archivos del proyecto (sin node_modules ni vendor gracias a .dockerignore)
 COPY . .
+
+# Instalar dependencias PHP
+RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
 # Instalar Node.js 20
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs
 
-# Instalar dependencias del proyecto (PHP + frontend)
-RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader && \
-    npm ci && \
-    npm run build
+# Instalar dependencias de frontend y compilar Vite (al final para conservar build)
+RUN npm ci && npm run build
 
-# Asignar permisos
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage /var/www/bootstrap/cache
+# Crear carpetas necesarias y dar permisos
+RUN mkdir -p /var/www/storage/framework/{cache,sessions,views} && \
+    chown -R www-data:www-data /var/www/storage /var/www/public && \
+    chmod -R 775 /var/www/storage /var/www/public
 
 # Exponer puerto
 EXPOSE 8000
 
-# Crear carpetas necesarias y dar permisos
-RUN mkdir -p /var/www/storage/framework/{cache,sessions,views} && \
-    chown -R www-data:www-data /var/www/storage && \
-    chmod -R 775 /var/www/storage
-
-# Comando para iniciar la app
+# Comando para iniciar Laravel
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
