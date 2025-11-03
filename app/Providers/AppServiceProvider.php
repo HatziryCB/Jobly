@@ -13,6 +13,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        if (!file_exists(storage_path('framework/views'))) {
+            mkdir(storage_path('framework/views'), 0755, true);
+        }
     }
+
 }
