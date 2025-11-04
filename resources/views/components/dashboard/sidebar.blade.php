@@ -10,13 +10,13 @@
              alt="Foto de perfil"
              class="w-20 h-20 rounded-full object-cover border mx-auto" />
 
-        <p class="mt-2 text-lg font-bold text-gray-800">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</p>
-        @if(auth()->user()->is_verified)
-            <p class="text-green-600 text-sm font-semibold flex items-center justify-center mt-1">
-                <i class="fa-solid fa-circle-check mr-1">
-                </i> Verificado
-            </p>
-        @endif
+        <div class="flex items-center gap-2">
+            <span class="font-medium text-gray-800 mx-auto mt-4">{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}</span>
+            @if (Auth::user()->profile && Auth::user()->profile->verification_status === 'verified')
+                <img src="{{ asset('images/verified-badge.png') }}" alt="Verificado" class="h-4 w-4">
+            @endif
+        </div>
+        <span class="font-light text-gray-500 mx-auto">{{ Auth::user()->email }}</span>
     </div>
 
     <nav class="space-y-1">

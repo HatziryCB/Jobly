@@ -27,12 +27,10 @@
                 <img src="{{ $user->profile->profile_picture ? asset('storage/' . $user->profile->profile_picture) : asset('images/default-user.jpg') }}"
                      class="w-20 h-20 rounded-full mx-auto mt-5 mb-10 object-cover">
 
-                <h2 class="text-xl font-bold mt-2">
+                <h2 class="text-2xl font-semibold text-gray-800 flex items-center gap-2 justify-center">
                     {{ $user->first_name }} {{ $user->last_name }}
-                    @if($user->profile->verification_status === 'verified')
-                        <span title="Usuario verificado">
-                        <img src="/images/verified-badge.png" alt="Verificado" class="inline w-5 h-5 ml-1">
-                    </span>
+                    @if ($user->profile && $user->profile->verification_status === 'verified')
+                        <img src="{{ asset('images/verified-badge.png') }}" alt="Verificado" class="h-5 w-5">
                     @endif
                 </h2>
                 <p class="text-gray-500 text-sm">{{ $user->email }}</p>

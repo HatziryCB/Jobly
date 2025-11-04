@@ -28,16 +28,12 @@
 
         {{-- Empleador y calificación --}}
         <div class="flex items-center gap-2 text-gray-600">
-            <span class="font-semibold text-indigo-700">
-                @if($offer->user)
-                    {{ $offer->user->first_name }} {{ $offer->user->last_name }}
-                @else
-                    <a href="{{ route('profile.show', $offer->employer_id) }}" class="text-indigo-600 text-m underline">
-                            {{ $offer->user->first_name }} {{ $offer->user->last_name }}
-                    </a>
-                    <span class="text-red-500">[Usuario no asignado]</span>
+            <p class="text-gray-700 font-semibold gap-2">
+                {{ $offer->user->first_name }} {{ $offer->user->last_name }}
+                @if ($offer->profile && $offer->profile->verification_status === 'verified')
+                    <img src="{{ asset('images/verified-badge.png') }}" alt="Verificado" class="h-4 w-4">
                 @endif
-            </span>
+            </p>
 
             {{-- Calificación --}}
             <span class="text-yellow-500">
@@ -50,7 +46,7 @@
         @if($offer->category)
             <span class="inline-block bg-purple-100 text-purple-700 px-4 py-1 rounded-full text-sm font-semibold mb-4">
             {{ ucfirst($offer->category) }}
-</span>
+            </span>
         @endif
 
 

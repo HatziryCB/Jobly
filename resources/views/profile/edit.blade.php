@@ -11,7 +11,6 @@
         {{-- === FOTO DE PERFIL === --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-                <x-input-label for="profile_picture" :value="'Foto de Perfil'" />
                 <img src="{{ $profile->profile_picture ? asset('storage/' . $profile->profile_picture) : asset('images/default-user.jpg') }}"
                      alt="Imagen de perfil"
                      class="w-24 h-24 rounded-full object-cover border">
@@ -30,20 +29,70 @@
             </div>
 
             {{-- === ESTADO DE VERIFICACIÓN === --}}
-            <div class="flex flex-col justify-between">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <p class="text-m font-medium text-gray-700">Estado de Verificación:</p>
-                        <p class="text-sm font-semibold
-                            {{ $profile->verification_status === 'verified' ? 'text-green-600' : ($profile->verification_status === 'rejected' ? 'text-red-500' : 'text-yellow-600') }}">
-                            {{ ucfirst($profile->verification_status_label) }}
-                        </p>
-                    </div>
-                    <button type="button" class="bg-sky-500 hover:bg-blue-700 text-white text-sm px-3 py-2 rounded-2xl">
-                        Solicitar Verificación
-                    </button>
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <p class="text-m font-medium text-gray-700">Estado de verificación:</p>
+
+                    @php
+                        $status = $profile->verification_status ?? 'none';
+                    @endphp
+
+                    @if ($status === 'verified')
+                        <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                            <img src="{{ asset('images/verified-badge.png') }}" alt="Verificado" class="h-4 w-4">
+                            Verificado
+                        </span>
+                    @elseif ($status === 'pending')
+                        <span class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-medium">
+                            ⏳ En revisión
+                        </span>
+                    @elseif ($status === 'rejected')
+                        <span class="inline-flex items-center gap-1 bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">
+                            ❌ Rechazado
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
+                            ⚪ No verificado
+                        </span>
+                    @endif
                 </div>
+
+                {{-- Botón principal --}}
+                @php
+                    $user = $user ?? auth()->user();
+                    $status = $profile->verification_status ?? 'none';
+                    $hasPending = $user && $user->identityVerification && $user->identityVerification->status === 'pending';
+                @endphp
+
+            @if ($status === 'verified')
+                    <button disabled
+                            class="inline-flex items-center justify-center bg-green-500 text-white text-sm font-semibold px-4 py-2 rounded-xl cursor-not-allowed">
+                        Verificado
+                    </button>
+                @elseif ($hasPending)
+                    <button disabled
+                            class="inline-flex items-center justify-center bg-gray-400 text-white text-sm font-semibold px-4 py-2 rounded-xl opacity-80 cursor-not-allowed">
+                        En revisión
+                    </button>
+                @else
+                    <a href="{{ route('verification.create') }}"
+                       class="inline-flex items-center justify-center bg-[var(--brand-primary)] hover:bg-[var(--brand-secondary)]
+               text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200 shadow-sm">
+                        Solicitar verificación
+                    </a>
+                @endif
+
+
             </div>
+
+            {{-- Motivo de rechazo --}}
+            @if ($status === 'rejected' && $user->identityVerification?->rejection_reason)
+                <p class="text-sm text-red-600">
+                    Motivo del rechazo: {{ $user->identityVerification->rejection_reason }}
+                </p>
+            @endif
+
+
         </div>
 
         {{-- === DATOS PERSONALES (User) === --}}
