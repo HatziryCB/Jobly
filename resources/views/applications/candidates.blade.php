@@ -18,9 +18,14 @@
                                      alt="Foto de perfil"
                                      class="w-20 h-20 rounded-full object-cover border" />
                         <div>
-                            <h3 class="font-semibold text-lg text-gray-800">
-                                {{ $candidate->employee->first_name }} {{ $candidate->employee->last_name }}
-                            </h3>
+                            <p class="text-gray-700 font-semibold flex items-center gap-2">
+                                {{ $offer->employee->first_name }} {{ $offer->employee->last_name }}
+                                @if ($candidate->profile && $candidate->profile->verification_status === 'verified')
+                                    <img src="{{ asset('images/verified-badge.png') }}" alt="Verificado" class="h-4 w-4">
+                                @endif
+
+                            </p>
+
                             <p class="text-sm text-gray-600">
                                 {{ $selectedCandidate->municipality}}, {{ $selectedCandidate->department }}
                             </p>
