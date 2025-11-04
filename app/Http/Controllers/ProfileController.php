@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -79,6 +81,23 @@ class ProfileController extends Controller
             $path = $request->file('profile_picture')->store('profiles', 'public');
             $profile->profile_picture = $path;
         }
+        if ($request->filled('current_password') || $request->filled('new_password')) {
+            $request->validate([
+                'current_password' => ['required', 'current_password'],
+                'new_password' => ['required', 'confirmed', Password::min(8)
+                    ->mixedCase()
+                    ->letters()
+                    ->numbers()
+                    ->symbols()],
+            ]);
+
+            $user = auth()->user();
+            $user->update(['password' => Hash::make($request->new_password)]);
+
+            return redirect()->route('profile.show', $profile->user_id)
+                ->with('success', 'Tu contraseña ha sido actualizada correctamente.');
+        }
+
         // Guardar las categorías como array JSON
         $profile->work_categories = $validated['work_categories'] ?? [];
 

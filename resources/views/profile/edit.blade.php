@@ -167,6 +167,88 @@
             </div>
         </div>
 
+        {{-- === CAMBIO DE CONTRASEÑA === --}}
+        <div class="border-t border-gray-200 pt-6 mt-8">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Actualizar contraseña</h3>
+
+            <div x-data="{ showOld:false, showNew:false, showConfirm:false }" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {{-- Contraseña actual --}}
+                <div class="relative">
+                    <x-input-label for="current_password" :value="'Contraseña actual *'" />
+                    <input :type="showOld ? 'text' : 'password'" id="current_password" name="current_password"
+                           class="w-full rounded-xl border-gray-300 focus:border-indigo-400 focus:ring-indigo-200 pr-10"
+                           placeholder="••••••••" />
+                    <button type="button" @click="showOld = !showOld"
+                            class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                        <svg x-show="!showOld" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <svg x-show="showOld" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.961 9.961 0 012.293-3.95m1.414-1.414A9.956 9.956 0 0112 5c4.478 0 8.268 2.943 9.542 7a9.953 9.953 0 01-4.147 5.17M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3 3l18 18" />
+                        </svg>
+                    </button>
+                </div>
+
+                {{-- Nueva contraseña --}}
+                <div class="relative">
+                    <x-input-label for="new_password" :value="'Nueva contraseña *'" />
+                    <input :type="showNew ? 'text' : 'password'" id="new_password" name="new_password"
+                           class="w-full rounded-xl border-gray-300 focus:border-indigo-400 focus:ring-indigo-200 pr-10"
+                           placeholder="••••••••" />
+                    <button type="button" @click="showNew = !showNew"
+                            class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                        <svg x-show="!showNew" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <svg x-show="showNew" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.961 9.961 0 012.293-3.95m1.414-1.414A9.956 9.956 0 0112 5c4.478 0 8.268 2.943 9.542 7a9.953 9.953 0 01-4.147 5.17M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3 3l18 18" />
+                        </svg>
+                    </button>
+                </div>
+
+                {{-- Confirmar nueva contraseña --}}
+                <div class="relative">
+                    <x-input-label for="new_password_confirmation" :value="'Confirmar contraseña *'" />
+                    <input :type="showConfirm ? 'text' : 'password'" id="new_password_confirmation" name="new_password_confirmation"
+                           class="w-full rounded-xl border-gray-300 focus:border-indigo-400 focus:ring-indigo-200 pr-10"
+                           placeholder="••••••••" />
+                    <button type="button" @click="showConfirm = !showConfirm"
+                            class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                        <svg x-show="!showConfirm" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <svg x-show="showConfirm" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.961 9.961 0 012.293-3.95m1.414-1.414A9.956 9.956 0 0112 5c4.478 0 8.268 2.943 9.542 7a9.953 9.953 0 01-4.147 5.17M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3 3l18 18" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         {{-- === BOTONES === --}}
         <div class="flex justify-end space-x-4 mt-4">
             <x-secondary-button onclick="window.location='{{ route('profile.show', $profile->user_id) }}'">
