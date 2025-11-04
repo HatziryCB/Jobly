@@ -26,14 +26,15 @@ return new class extends Migration
             // Archivos de verificación
             $table->string('dpi_front')->nullable();       // Imagen DPI frontal
             $table->string('dpi_back')->nullable();        // Imagen DPI trasera
-            $table->string('selfie_with_dpi')->nullable(); // Foto selfie
-            $table->string('proof_of_address')->nullable();// Comprobante (agua/luz/etc.)
+            $table->string('selfie')->nullable(); // Foto selfie
+            $table->string('voucher')->nullable();// Comprobante (agua/luz/etc.)
 
             // Estado
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'rejected','expired'])->default('pending');
             $table->text('rejection_reason')->nullable();
 
             // Control
+            $table->timestamp('expires_at')->nullable();
             $table->timestamps();
         });
 

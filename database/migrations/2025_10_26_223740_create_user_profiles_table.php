@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
 
             $table->string('profile_picture')->nullable();
-            $table->enum('verification_status', ['pending', 'verified', 'rejected'])->default('pending');
+            $table->enum('verification_status', ['none', 'pending', 'verified', 'rejected'])->default('none');
             $table->float('average_rating', 3, 2)->default(0.0);
             $table->json('work_categories')->nullable();
             $table->text('bio')->nullable();
