@@ -56,6 +56,25 @@ class AdminVerificationController extends Controller
         return view('admin.verifications.index', compact('verifications', 'stats'));
     }
 
+    public function dashboard()
+    {
+        $stats = $this->getVerificationStats();
+
+        return view('admin.dashboard', [
+            'pendingCount' => $stats['pending'],
+            'verifiedCount' => $stats['verified'],
+            //'locationVerifiedCount' => $stats['locationVerified'],
+        ]);
+    }
+
+    private function getVerificationStats()
+    {
+        return [
+            'pending' => IdentityVerification::where('status', 'pending')->count(),
+            'verified' => IdentityVerification::where('status', 'verified')->count(),
+            //'locationVerified' => IdentityVerification::whereNotNull('location_verified_at')->count(),
+        ];
+    }
     public function show($id)
     {
         $verification = IdentityVerification::with('user.profile')->findOrFail($id);
@@ -65,18 +84,34 @@ class AdminVerificationController extends Controller
         ]);
     }
 
-
-    public function approve($id)
+    public function approve($id, Request $request)
     {
-        $verification = IdentityVerification::findOrFail($id);
+        $verification = IdentityVerification::with('user.profile')->findOrFail($id);
 
+        // Guardar los radios
+        $verification->checks = $request->all();
+
+        // Determinar insignia final
+        $hasIdentity = $request->dpi_ok === 'yes'
+            && $request->name_ok === 'yes'
+            && $request->birth_ok === 'yes'
+            && $request->gender_ok === 'yes'
+            && $request->photo_ok === 'yes';
+
+        $hasLocation = $request->location_ok === 'yes';
+
+        if ($hasIdentity && $hasLocation) {
+            $verification->user->profile->verification_badge = 'full';   // 🟣
+        } elseif ($hasIdentity) {
+            $verification->user->profile->verification_badge = 'identity'; // 🟦
+        }
+
+        $verification->user->profile->save();
         $verification->update(['status' => 'verified']);
-        $verification->user->profile?->update([
-            'verification_status' => 'verified',
-        ]);
 
-        return back()->with('success', 'La solicitud fue aprobada correctamente.');
+        return redirect()->back()->with('success', 'Verificación aprobada');
     }
+
 
     public function reject(Request $request, IdentityVerification $verification)
     {

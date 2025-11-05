@@ -11,7 +11,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/verifications', [AdminVerificationController::class, 'index'])->name('admin.verifications.index');
-    Route::get('/verifications/{id}', [AdminVerificationController::class, 'show'])->name('admin.verifications.show');
+    Route::get('/admin/verifications/{id}', [AdminVerificationController::class, 'show'])->name('admin.verifications.show');
     Route::post('/verifications/{id}/approve', [AdminVerificationController::class, 'approve'])->name('admin.verifications.approve');
     Route::post('/verifications/{id}/reject', [AdminVerificationController::class, 'reject'])->name('admin.verifications.reject');
 });

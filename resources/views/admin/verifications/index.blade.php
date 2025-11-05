@@ -88,7 +88,7 @@
                     <td class="px-4 py-3">{{ $verification->created_at->format('d/m/Y') }}</td>
 
                     <td class="px-4 py-3 text-center">
-                        <button onclick="openVerification({{ $verification->id }})"
+                        <button onclick="openModal({{ $verification->id }})"
                                 class="text-indigo-600 hover:text-indigo-800 transition" title="Revisar">
                             <i class="fas fa-eye text-lg"></i>
                         </button>
@@ -106,29 +106,43 @@
 
     {{-- MODAL --}}
     <div id="verificationModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-[9999] justify-center items-start pt-20">
-        <div class="bg-white rounded-2xl shadow-2xl w-[90%] max-w-5xl max-h-[90vh] overflow-y-auto">
-            <div id="modalContent"></div>
+        <div class="bg-white rounded-2xl shadow-2xl w-[90%] max-w-5xl max-h-[90vh] overflow-y-auto relative">
+            {{-- Botón cerrar --}}
+            <button onclick="closeModal()"
+                    class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-3xl font-bold leading-none">
+                &times;
+            </button>
+
+            <div id="modalContent" class="p-6"></div>
         </div>
     </div>
 
+
     <script>
-        async function openVerification(id) {
+        async function openModal(id) {
             const modal = document.getElementById('verificationModal');
             const content = document.getElementById('modalContent');
-            modal.classList.remove('hidden','opacity-0');
 
-            const res = await fetch(`/admin/verifications/${id}`);
-            content.innerHTML = await res.text();
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
 
-            document.dispatchEvent(new Event('verify:loaded'));
+            const response = await fetch(`/admin/verifications/${id}`);
+            const data = await response.json(); // <- IMPORTANTE
+
+            content.innerHTML = data.html;
+
+            // Re-ejecutar scripts internos de la vista
+            if (window.JV && typeof window.JV.init === 'function') {
+                window.JV.init();
+            }
         }
 
-        function closeVerification(){
-            const modal = document.getElementById('verificationModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+        function closeModal() {
+            document.getElementById('verificationModal').classList.add('hidden');
         }
+
     </script>
+
     <script src="https://cdn.jsdelivr.net/npm/@glidejs/glide"></script>
 
     <script>
