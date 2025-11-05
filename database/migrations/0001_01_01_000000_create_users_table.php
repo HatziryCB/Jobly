@@ -13,18 +13,18 @@ return new class extends Migration
             $table->id();
 
             // Nombres y apellidos
-            $table->string('first_name');
-            $table->string('second_name')->nullable(); // Nuevo
-            $table->string('last_name');
-            $table->string('second_last_name')->nullable(); // Nuevo
+            $table->string('first_name', 50);
+            $table->string('second_name',50)->nullable();
+            $table->string('last_name',50);
+            $table->string('second_last_name',50)->nullable();
 
-            $table->string('email')->unique();
+            $table->string('email',100)->unique();
             $table->string('password');
 
             $table->string('phone', 8)->nullable();
 
             $table->timestamp('email_verified_at')->nullable();
-            $table->boolean('tos_accepted')->default(false);
+            $table->boolean('tos_accepted')->default(false)->index();
             $table->timestamp('tos_accepted_at')->nullable();
 
             $table->rememberToken();

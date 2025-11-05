@@ -9,15 +9,15 @@ return new class extends Migration
     public function up(): void {
         Schema::create('offers', function (Blueprint $t) {
             $t->id();
-            $t->foreignId('employer_id')->constrained('users')->cascadeOnDelete(); // dueño (empleador)
+            $t->foreignId('employer_id')->constrained('users')->cascadeOnDelete();
             $t->string('title',120);
             $t->text('description');
-            $t->string('location_text',120)->nullable();
+            $t->string('location_text',120);
             $t->unsignedInteger('pay_min')->nullable();
             $t->unsignedInteger('pay_max')->nullable();
             $t->enum('status',['draft','open','hired','closed'])->default('open');
-            $t->decimal('lat',9,6)->nullable();
-            $t->decimal('lng',9,6)->nullable();
+            $t->decimal('lat',9,6);
+            $t->decimal('lng',9,6);
             $t->timestamps();
 
             $t->index(['employer_id','status']);

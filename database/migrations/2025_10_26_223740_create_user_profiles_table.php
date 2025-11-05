@@ -20,14 +20,14 @@ return new class extends Migration
             $table->text('bio')->nullable();
             $table->text('experience')->nullable();
 
-            $table->string('department')->nullable();
-            $table->string('municipality')->nullable();
-            $table->string('zone')->nullable();
-            $table->string('neighborhood')->nullable(); //Aldea, barrio, colonia
+            $table->string('department',30)->nullable();
+            $table->string('municipality',30)->nullable();
+            $table->string('zone',10)->nullable();
+            $table->string('neighborhood',100)->nullable(); //Aldea, barrio, colonia
 
 
             $table->date('birth_date')->nullable();
-            $table->enum('gender', ['male', 'female', 'other'])->nullable();
+            $table->enum('gender', ['male', 'female', 'other','unspecified'])->default('unspecified');
 
             $table->timestamps();
         });
