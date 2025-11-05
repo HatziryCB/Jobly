@@ -75,25 +75,43 @@ class AdminVerificationController extends Controller
             //'locationVerified' => IdentityVerification::whereNotNull('location_verified_at')->count(),
         ];
     }
-
     public function show($id)
     {
         $verification = IdentityVerification::with('user.profile')->findOrFail($id);
 
-        return view('admin.verifications.partials._detail', compact('verification'));
-    }
-
-    public function approve($id)
-    {
-        $verification = IdentityVerification::findOrFail($id);
-
-        $verification->update(['status' => 'verified']);
-        $verification->user->profile?->update([
-            'verification_status' => 'verified',
+        return response()->json([
+            'html' => view('admin.verifications.partials._detail', compact('verification'))->render()
         ]);
-
-        return back()->with('success', 'La solicitud fue aprobada correctamente.');
     }
+
+    public function approve($id, Request $request)
+    {
+        $verification = IdentityVerification::with('user.profile')->findOrFail($id);
+
+        // Guardar los radios
+        $verification->checks = $request->all();
+
+        // Determinar insignia final
+        $hasIdentity = $request->dpi_ok === 'yes'
+            && $request->name_ok === 'yes'
+            && $request->birth_ok === 'yes'
+            && $request->gender_ok === 'yes'
+            && $request->photo_ok === 'yes';
+
+        $hasLocation = $request->location_ok === 'yes';
+
+        if ($hasIdentity && $hasLocation) {
+            $verification->user->profile->verification_badge = 'full';   // 🟣
+        } elseif ($hasIdentity) {
+            $verification->user->profile->verification_badge = 'identity'; // 🟦
+        }
+
+        $verification->user->profile->save();
+        $verification->update(['status' => 'verified']);
+
+        return redirect()->back()->with('success', 'Verificación aprobada');
+    }
+
 
     public function reject(Request $request, IdentityVerification $verification)
     {

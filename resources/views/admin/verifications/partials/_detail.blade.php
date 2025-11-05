@@ -1,17 +1,26 @@
 @php
-    $vid = $verification->id;
-    $gallery = [];
-    if ($verification->dpi_front) $gallery[] = asset('storage/'.$verification->dpi_front);
-    if ($verification->selfie)    $gallery[] = asset('storage/'.$verification->selfie);
-    if ($verification->voucher)   $gallery[] = asset('storage/'.$verification->voucher);
+    /** @var \App\Models\IdentityVerification $verification */
 
-    $formattedDpi = preg_replace('/(\d{4})(\d{5})(\d{4})/', '$1 $2 $3', $verification->dpi);
+    use Illuminate\Support\Facades\Storage;$vid = $verification->id;
+    $gallery = [];
+    if ($verification->dpi_front) $gallery[] = Storage::url($verification->dpi_front);
+    if ($verification->selfie)    $gallery[] = Storage::url($verification->selfie);
+    if ($verification->voucher)   $gallery[] = Storage::url($verification->voucher);
+
+    $formattedDpi = $verification->dpi
+        ? preg_replace('/(\d{4})(\d{5})(\d{4})/', '$1 $2 $3', $verification->dpi)
+        : '—';
+
     $fullNames = trim(($verification->user->first_name ?? '') . ' ' . ($verification->user->second_name ?? ''));
     $fullLastNames = trim(($verification->user->last_name ?? '') . ' ' . ($verification->user->second_last_name ?? ''));
-    $formattedDate = $verification->user->profile->birth_date
-        ? \Carbon\Carbon::parse($verification->user->profile->birth_date)->locale('es')->isoFormat('DD [de] MMMM [de] YYYY')
+
+    $formattedDate = optional($verification->user->profile->birth_date)
+        ? \Carbon\Carbon::parse($verification->user->profile->birth_date)
+            ->locale('es')
+            ->isoFormat('DD [de] MMMM [de] YYYY')
         : '—';
 @endphp
+
 
 <div class="p-6" data-images='@json($gallery)' data-vid="{{ $vid }}">
 
@@ -41,7 +50,8 @@
 
             {{-- VISOR --}}
             <div id="viewer-{{ $vid }}" class="hidden fixed inset-0 bg-black/80 z-[99999] items-center justify-center">
-                <img id="viewer-img-{{ $vid }}" class="max-h-[85vh] max-w-[90vw] rounded-lg cursor-zoom-in transition-transform" />
+                <img id="viewer-img-{{ $vid }}"
+                     class="max-h-[85vh] max-w-[90vw] rounded-lg cursor-zoom-in transition-transform"/>
                 <button onclick="JV.close({{ $vid }})" class="absolute top-8 right-10 text-white text-3xl">×</button>
                 <button onclick="JV.prev({{ $vid }})" class="absolute left-6 text-white text-3xl">❮</button>
                 <button onclick="JV.next({{ $vid }})" class="absolute right-6 text-white text-3xl">❯</button>
@@ -61,19 +71,20 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="py-1 font-medium">Nombres:</td>
-                    <td>{{ $fullNames }}</td>
-                    <td class="text-right">
-                        <label><input type="radio" name="name_ok"> Sí</label>
-                        <label class="ml-3"><input type="radio" name="name_ok"> No</label>
+                    <td class="py-2 font-medium text-gray-600 w-32">Nombres:</td>
+                    <td class="py-2">{{ $fullNames ?: '—' }}</td>
+                    <td class="py-2 text-right whitespace-nowrap">
+                        <label class="mr-3"><input type="radio" name="names_ok" value="yes"> Sí</label>
+                        <label><input type="radio" name="names_ok" value="no"> No</label>
                     </td>
                 </tr>
+
                 <tr>
-                    <td class="py-1 font-medium">Apellidos:</td>
-                    <td>{{ $fullLastNames }}</td>
-                    <td class="text-right">
-                        <label><input type="radio" name="last_ok"> Sí</label>
-                        <label class="ml-3"><input type="radio" name="last_ok"> No</label>
+                    <td class="py-2 font-medium text-gray-600 w-32">Apellidos:</td>
+                    <td class="py-2">{{ $fullLastNames ?: '—' }}</td>
+                    <td class="py-2 text-right whitespace-nowrap">
+                        <label class="mr-3"><input type="radio" name="lastnames_ok" value="yes"> Sí</label>
+                        <label><input type="radio" name="lastnames_ok" value="no"> No</label>
                     </td>
                 </tr>
                 <tr>
@@ -87,7 +98,8 @@
                 @if($verification->voucher)
                     <tr>
                         <td class="py-1 font-medium">Ubicación:</td>
-                        <td>{{ $verification->user->profile->department }} / {{ $verification->user->profile->municipality }}</td>
+                        <td>{{ $verification->user->profile->department }}
+                            / {{ $verification->user->profile->municipality }}</td>
                         <td class="text-right">
                             <label><input type="radio" name="loc_ok"> Sí</label>
                             <label class="ml-3"><input type="radio" name="loc_ok"> No</label>
@@ -97,17 +109,79 @@
             </table>
 
             {{-- Acciones --}}
-            <form action="{{ route('admin.verifications.reject', $verification->id) }}" method="POST" class="mt-4 space-y-3">
+            <form action="{{ route('admin.verifications.reject', $verification->id) }}" method="POST"
+                  class="mt-4 space-y-3">
                 @csrf
-                <textarea name="rejection_reason" class="w-full border rounded-xl px-3 py-2" placeholder="Motivo (opcional)"></textarea>
+                <textarea name="rejection_reason" class="w-full border rounded-xl px-3 py-2"
+                          placeholder="Motivo (opcional)"></textarea>
                 <div class="flex justify-end gap-3">
                     <button class="btn-reject">Rechazar</button>
-                    <button type="button" class="btn-approve" onclick="JV.approve({{ $verification->id }})">Aprobar</button>
+                    <button type="button" class="btn-approve" onclick="JV.approve({{ $verification->id }})">Aprobar
+                    </button>
                 </div>
             </form>
 
         </div>
 
     </div>
+    <script>
+        window.JVInit = function () {
 
+            // Configurar galería de imágenes
+            const galleries = document.querySelectorAll('[data-gallery]');
+            galleries.forEach(gal => {
+                const vid = gal.getAttribute('data-gallery');
+                const images = JSON.parse(gal.getAttribute('data-images'));
+
+                if (!window.JV) window.JV = {galleries: {}};
+                window.JV.galleries[vid] = {images: images, idx: 0};
+
+                // Montar Glide
+                new Glide(`#glide-${vid}`, {
+                    type: 'carousel',
+                    startAt: 0,
+                    perView: 1,
+                    gap: 20,
+                }).mount();
+            });
+
+            // Click para abrir visor
+            document.querySelectorAll('[data-viewer-open]').forEach(btn => {
+                btn.onclick = function () {
+                    const vid = this.dataset.gallery;
+                    const idx = parseInt(this.dataset.index);
+                    window.JV.galleries[vid].idx = idx;
+
+                    const viewer = document.getElementById(`viewer-${vid}`);
+                    const img = document.getElementById(`viewer-img-${vid}`);
+                    img.src = window.JV.galleries[vid].images[idx];
+                    viewer.classList.remove('hidden');
+                }
+            });
+
+            // Botones del visor
+            document.querySelectorAll('[data-viewer-close]').forEach(btn => {
+                btn.onclick = () => btn.closest('[data-viewer]').classList.add('hidden');
+            });
+
+            // Prev / Next
+            document.querySelectorAll('[data-viewer-prev]').forEach(btn => {
+                btn.onclick = () => {
+                    const vid = btn.dataset.gallery;
+                    const g = window.JV.galleries[vid];
+                    g.idx = (g.idx - 1 + g.images.length) % g.images.length;
+                    document.getElementById(`viewer-img-${vid}`).src = g.images[g.idx];
+                };
+            });
+
+            document.querySelectorAll('[data-viewer-next]').forEach(btn => {
+                btn.onclick = () => {
+                    const vid = btn.dataset.gallery;
+                    const g = window.JV.galleries[vid];
+                    g.idx = (g.idx + 1) % g.images.length;
+                    document.getElementById(`viewer-img-${vid}`).src = g.images[g.idx];
+                };
+            });
+        };
+    </script>
 </div>

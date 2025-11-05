@@ -33,25 +33,13 @@
                     {{ $user->first_name }} {{ $user->last_name }}
 
                     {{-- Insignia de verificación de identidad --}}
-                    @if ($user->profile && $user->profile->verification_status === 'verified')
-                        @php
-                            $verification = $user->identityVerification;
-                            $hasFullVerification = $verification && $verification->status === 'approved' && $verification->location_verified;
-                        @endphp
-
-                        <span class="inline-flex items-center gap-1 ml-2">
-                            @if ($hasFullVerification)
-                                {{-- Badge morado (identidad + residencia) --}}
-                                <img src="{{ asset('images/verified-badge-purple.svg') }}" alt="Verificado completo" class="h-5 w-5">
-                                <span class="text-xs text-purple-700 font-semibold">Verificación completa</span>
-                            @else
-                                {{-- Badge azul (solo identidad) --}}
-                                <img src="{{ asset('images/verified-badge.png') }}" alt="Identidad verificada" class="h-5 w-5">
-                                <span class="text-xs text-blue-700 font-semibold">Identidad</span>
-                            @endif
-                        </span>
-                             @endif
-
+                    @if($user->profile->verification_badge === 'identity')
+                        <img src="{{ asset('images/badge_identity.png') }}" class="h-5 inline-block" title="Identidad Verificada">
+                    @elseif($user->profile->verification_badge === 'full')
+                        <img src="{{ asset('images/badge_full.png') }}" class="h-5 inline-block" title="Identidad + Ubicación Verificada">
+                    @else
+                        <span class="bg-red-400 text-white text-xs rounded-2xl px-1 py-1">No verificado</span>
+                    @endif
                 </h2>
                 <p class="text-gray-500 text-sm">{{ $user->email }}</p>
             </div>
