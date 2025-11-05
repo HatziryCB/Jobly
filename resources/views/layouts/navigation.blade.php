@@ -67,7 +67,7 @@
                             @endrole
 
                             @role('admin')
-                            <a href="#" class="block text-gray-700">Panel administrativo</a>
+                            <a href="{{ route('admin.dashboard') }}" class="block text-gray-700">Panel administrativo</a>
                             <a href="{{ route('admin.verifications.index') }}" class="block text-gray-700">Solicitudes</a>
                             <a href="{{ route('profile.show', auth()->id()) }}" class="block text-gray-700">Mi perfil</a>
                             @endrole
@@ -141,7 +141,7 @@
                         @endrole
 
                         @role('admin')
-                        <a href="#" class="block text-gray-700">Panel administrativo</a>
+                        <a href="{{ route('admin.dashboard') }}" class="block text-gray-700">Panel administrativo</a>
                         <a href="{{ route('admin.verifications.index') }}" class="block text-gray-700">Solicitudes</a>
                         <a href="{{ route('profile.show', auth()->id()) }}" class="block px-3 py-2 hover:bg-gray-50 text-gray-700">Mi perfil</a>
                         @endrole

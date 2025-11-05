@@ -16,13 +16,13 @@
         </div>
         <div class="p-5 bg-purple-100 rounded-2xl">
             <p class="text-gray-700">Verificaciones de ubicación</p>
-            <p class="text-3xl font-bold text-purple-700">{{ $locationVerifiedCount }}</p>
+            {{--<p class="text-3xl font-bold text-purple-700">{{ $locationVerifiedCount }}</p>--}}
         </div>
     </div>
 
     <div class="mt-10">
         <a href="{{ route('admin.verifications.index') }}"
-           class="inline-flex items-center bg-[var(--brand-primary)] text-white font-semibold px-6 py-3 rounded-xl hover:bg-[var(--brand-secondary)] transition">
+           class="inline-flex items-center bg-[var(--brand-primary)] text-white font-semibold px-2 py-2 rounded-2xl hover:bg-[var(--brand-secondary)] transition">
             Revisar solicitudes de verificación
         </a>
     </div>

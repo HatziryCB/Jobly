@@ -56,15 +56,32 @@ class AdminVerificationController extends Controller
         return view('admin.verifications.index', compact('verifications', 'stats'));
     }
 
+    public function dashboard()
+    {
+        $stats = $this->getVerificationStats();
+
+        return view('admin.dashboard', [
+            'pendingCount' => $stats['pending'],
+            'verifiedCount' => $stats['verified'],
+            //'locationVerifiedCount' => $stats['locationVerified'],
+        ]);
+    }
+
+    private function getVerificationStats()
+    {
+        return [
+            'pending' => IdentityVerification::where('status', 'pending')->count(),
+            'verified' => IdentityVerification::where('status', 'verified')->count(),
+            //'locationVerified' => IdentityVerification::whereNotNull('location_verified_at')->count(),
+        ];
+    }
+
     public function show($id)
     {
         $verification = IdentityVerification::with('user.profile')->findOrFail($id);
 
-        return response()->json([
-            'html' => view('admin.verifications.partials._detail', compact('verification'))->render()
-        ]);
+        return view('admin.verifications.partials._detail', compact('verification'));
     }
-
 
     public function approve($id)
     {

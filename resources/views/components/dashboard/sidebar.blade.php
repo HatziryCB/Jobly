@@ -27,8 +27,8 @@
         @endphp
 
         @role('admin')
-        <a href="#"
-           class="flex items-center py-2 px-3 rounded-xl transition-all duration-150 {{ str_contains($currentRoute, '#') ? $activeClass : $inactiveClass }}">
+        <a href="{{ route('admin.dashboard') }}"
+           class="flex items-center py-2 px-3 rounded-xl transition-all duration-150 {{ str_contains($currentRoute, 'admin.dashboard') ? $activeClass : $inactiveClass }}">
             <i class="fa-solid fa-chart-line w-5 mr-3"></i> Dashboard
         </a>
         <a href="{{ route('admin.verifications.index') }}"

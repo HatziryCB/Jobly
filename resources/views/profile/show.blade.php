@@ -119,11 +119,12 @@
                    class="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 text-sm">
                     <i class="fas fa-edit mr-1"></i> Editar
                 </a>
-
+                @role('employee|employer')
                 <a href="{{ route('verification.create') }}"
                    class="px-3 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 text-sm">
                     <i class="fas fa-check-circle mr-1"></i> Solicitar verificación
                 </a>
+                @endrole
             </div>
 
         </div>
