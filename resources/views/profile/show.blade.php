@@ -5,6 +5,8 @@
 
         {{-- Columna izquierda - resumen --}}
         <div class="lg:w-1/3 bg-white p-6 rounded-xl shadow space-y-6">
+
+            {{-- Mensaje de éxito --}}
             @if (session('success'))
                 <div x-data="{ show: true }"
                      x-show="show"
@@ -14,8 +16,7 @@
                     <span class="block sm:inline">{{ session('success') }}</span>
                     <button type="button" @click="show = false"
                             class="absolute top-0 bottom-0 right-0 px-4 py-3">
-                        <svg class="fill-current h-5 w-5 text-green-500" role="button" xmlns="http://www.w3.org/2000/svg"
-                             viewBox="0 0 20 20">
+                        <svg class="fill-current h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                             <title>Cerrar</title>
                             <path d="M14.348 5.652a1 1 0 00-1.414 0L10 8.586 7.066 5.652a1 1 0 10-1.414 1.414L8.586 10l-2.934 2.934a1 1 0 101.414 1.414L10 11.414l2.934 2.934a1 1 0 001.414-1.414L11.414 10l2.934-2.934a1 1 0 000-1.414z"/>
                         </svg>
@@ -23,46 +24,111 @@
                 </div>
             @endif
 
+            {{-- Foto y datos principales --}}
             <div class="text-center">
                 <img src="{{ $user->profile->profile_picture ? asset('storage/' . $user->profile->profile_picture) : asset('images/default-user.jpg') }}"
-                     class="w-20 h-20 rounded-full mx-auto mt-5 mb-10 object-cover">
+                     class="w-24 h-24 rounded-full mx-auto mt-5 mb-6 object-cover border shadow-sm">
 
                 <h2 class="text-2xl font-semibold text-gray-800 flex items-center gap-2 justify-center">
                     {{ $user->first_name }} {{ $user->last_name }}
+
+                    {{-- Insignia de verificación de identidad --}}
                     @if ($user->profile && $user->profile->verification_status === 'verified')
-                        <img src="{{ asset('images/verified-badge.png') }}" alt="Verificado" class="h-5 w-5">
-                    @endif
+                        @php
+                            $verification = $user->identityVerification;
+                            $hasFullVerification = $verification && $verification->status === 'approved' && $verification->location_verified;
+                        @endphp
+
+                        <span class="inline-flex items-center gap-1 ml-2">
+                            @if ($hasFullVerification)
+                                {{-- Badge morado (identidad + residencia) --}}
+                                <img src="{{ asset('images/verified-badge-purple.svg') }}" alt="Verificado completo" class="h-5 w-5">
+                                <span class="text-xs text-purple-700 font-semibold">Verificación completa</span>
+                            @else
+                                {{-- Badge azul (solo identidad) --}}
+                                <img src="{{ asset('images/verified-badge.png') }}" alt="Identidad verificada" class="h-5 w-5">
+                                <span class="text-xs text-blue-700 font-semibold">Identidad</span>
+                            @endif
+                        </span>
+                             @endif
+
                 </h2>
                 <p class="text-gray-500 text-sm">{{ $user->email }}</p>
             </div>
 
-            <div class="space-y-2 mb-5">
+            {{-- Datos básicos --}}
+            <div class="space-y-2 mb-5 text-sm text-gray-700">
                 <p><i class="fas fa-phone mr-2 text-amber-500"></i>{{ $user->phone ?? 'No especificado' }}</p>
-                <p><i class="fas fa-calendar-alt mr-2 text-sky-500"></i>{{ $user->profile->birth_date ? \Carbon\Carbon::parse($user->profile->birth_date)->format('d/m/Y') : 'No especificado' }}</p>
+                <p><i class="fas fa-calendar-alt mr-2 text-sky-500"></i>
+                    {{ $user->profile->birth_date ? \Carbon\Carbon::parse($user->profile->birth_date)->format('d/m/Y') : 'No especificado' }}
+                </p>
                 @php
                     $generos = [
                         'male' => 'Masculino',
                         'female' => 'Femenino',
                         'other' => 'Otro',
+                        'unspecified' => 'No especificado'
                     ];
                 @endphp
                 <p><i class="fas fa-venus-mars mr-2 text-purple-500"></i>{{ $generos[$user->profile->gender] ?? 'No especificado' }}</p>
-                <p><i class="fas fa-map-marker-alt mr-2 text-rose-500"></i>{{ $user->profile->municipality }}, {{ $user->profile->department }} , zona {{ $user->profile->zone }}, {{ $user->profile->neighborhood }}.</p>
+
+                {{-- Dirección limpia y condicional --}}
+                <p class="flex items-start">
+                    <i class="fas fa-map-marker-alt mr-2 text-rose-500 mt-1"></i>
+                    <span>
+                    {{ $user->profile->municipality ?? 'Municipio no especificado' }},
+                    {{ $user->profile->department ?? 'Departamento no especificado' }}
+                        @if ($user->profile->zone)
+                            , zona {{ $user->profile->zone }}
+                        @endif
+                        @if ($user->profile->neighborhood)
+                            , {{ $user->profile->neighborhood }}
+                        @endif
+                </span>
+                </p>
+
+                {{-- Estado de verificaciones --}}
+                <div class="mt-4 space-y-1">
+                    <p class="text-gray-700 font-medium">
+                        <i class="fas fa-id-card text-emerald-500 mr-2"></i>
+                        Identidad:
+                        @if ($user->profile->verification_status === 'verified')
+                            <span class="text-green-600 font-semibold">Verificada</span>
+                        @elseif ($user->profile->verification_status === 'pending')
+                            <span class="text-yellow-600 font-semibold">En revisión</span>
+                        @elseif ($user->profile->verification_status === 'rejected')
+                            <span class="text-red-600 font-semibold">Rechazada</span>
+                        @else
+                            <span class="text-gray-500">No verificada</span>
+                        @endif
+                    </p>
+
+                    {{-- Si el usuario tiene comprobante validado --}}
+                    @if ($user->verification && $user->verification->voucher)
+                        <p class="text-gray-700 font-medium">
+                            <i class="fas fa-map-pin text-indigo-500 mr-2"></i>
+                            Ubicación: <span class="text-green-600 font-semibold">Verificada</span>
+                        </p>
+                    @endif
+                </div>
             </div>
 
             {{-- Botones --}}
             <div class="flex justify-between mt-6">
-                <a href="{{ route('profile.edit', $user->id) }}" class="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 text-sm">
+                <a href="{{ route('profile.edit', $user->id) }}"
+                   class="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 text-sm">
                     <i class="fas fa-edit mr-1"></i> Editar
                 </a>
 
-                <a href="#" class="px-2 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 text-sm">
+                <a href="{{ route('verification.create') }}"
+                   class="px-3 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 text-sm">
                     <i class="fas fa-check-circle mr-1"></i> Solicitar verificación
                 </a>
             </div>
+
         </div>
 
-        {{-- Columna derecha - info detallada --}}
+        {{-- Columna derecha - información detallada --}}
         <div class="lg:w-2/3 bg-white p-6 rounded-xl shadow space-y-6">
 
             <div>

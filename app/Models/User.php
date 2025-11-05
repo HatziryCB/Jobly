@@ -46,8 +46,14 @@ class   User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasOne(UserProfile::class);
     }
-    public function identityVerification()
+    public function identityVerifications()
     {
-        return $this->hasOne(IdentityVerification::class);
+        return $this->hasMany(IdentityVerification::class);
+    }
+    protected static function booted()
+    {
+        static::created(function ($user) {
+            $user->profile()->create();
+        });
     }
 }
