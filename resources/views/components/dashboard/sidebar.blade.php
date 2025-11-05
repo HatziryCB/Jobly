@@ -27,9 +27,13 @@
         @endphp
 
         @role('admin')
-        <a href="{{ route('admin.dashboard') }}"
-           class="flex items-center py-2 px-3 rounded-xl transition-all duration-150 {{ str_contains($currentRoute, 'admin.dashboard') ? $activeClass : $inactiveClass }}">
+        <a href="#"
+           class="flex items-center py-2 px-3 rounded-xl transition-all duration-150 {{ str_contains($currentRoute, '#') ? $activeClass : $inactiveClass }}">
             <i class="fa-solid fa-chart-line w-5 mr-3"></i> Dashboard
+        </a>
+        <a href="{{ route('admin.verifications.index') }}"
+           class="flex items-center py-2 px-3 rounded-xl transition-all duration-150 {{ str_contains($currentRoute, 'admin.verifications.index') ? $activeClass : $inactiveClass }}">
+            <i class="fa-solid fa-chart-line w-5 mr-3"></i> Solicitudes
         </a>
         <a href="{{ route('profile.show', auth()->id()) }}"
            class="flex items-center py-2 px-3 rounded-xl transition-all duration-150 {{ str_contains($currentRoute, 'profile.show') ? $activeClass : $inactiveClass }}">
@@ -66,6 +70,7 @@
             <i class="fa-solid fa-file-contract w-5 mr-3"></i> Mis Postulaciones
         </a>
         @endrole
+
         <div class="pt-4 border-t border-gray-100 mt-4"></div>
 
         <form method="POST" action="{{ route('logout') }}">

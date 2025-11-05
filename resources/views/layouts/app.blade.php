@@ -8,10 +8,6 @@
 
     <title>@yield('title', config('app.name', 'Jobly'))</title>
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
     <!-- Styles & Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -22,6 +18,14 @@
     <script>
         window.addEventListener('load', () => document.body.classList.add('loaded'));
     </script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <!-- Lightbox CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@glidejs/glide/dist/css/glide.core.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@glidejs/glide/dist/css/glide.theme.min.css">
 
 </head>
 <body class="font-sans antialiased bg-[var(--bg)] min-h-screen flex flex-col">
@@ -42,6 +46,12 @@
 </div>
 @stack('scripts')
 <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<!-- Lightbox JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+<script>
+    window.addEventListener('load', () => document.body.classList.add('loaded'));
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@glidejs/glide"></script>
 
 </body>
 </html>

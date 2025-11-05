@@ -239,3 +239,41 @@ a{ color:var(--brand-primary); }
 [x-cloak] {
     display: none !important;
 }
+
+/* --- Botones corporativos Jobly --- */
+.btn-approve {
+    background-color: #6402c8;
+    color: white;
+    border-radius: 12px;
+    padding: 0.6rem 1.4rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+.btn-approve:hover {
+    background-color: #3b78b5;
+}
+
+.btn-reject {
+    background-color: #555;
+    color: white;
+    border-radius: 12px;
+    padding: 0.6rem 1.4rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+.btn-reject:hover {
+    background-color: #000;
+}
+#imageViewerModal {
+    backdrop-filter: blur(4px);
+    transition: opacity 0.2s ease-in-out;
+}
+
+#viewerImage {
+    transition: transform .25s ease;
+    cursor: zoom-in;
+}
+#viewerImage.zoomed {
+    transform: scale(1.9);
+    cursor: zoom-out;
+}

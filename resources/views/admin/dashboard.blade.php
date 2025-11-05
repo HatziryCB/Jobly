@@ -1,18 +1,29 @@
-@extends('layouts.app')
+@extends('layouts.dashboard')
 
 @section('title', 'Panel Admin')
 
-@section('content')
-    <section class="container mx-auto px-4 py-8">
-        <h1 class="text-2xl font-bold text-indigo-700 mb-4">Panel de administración</h1>
+@section('dashboard-content')
+    <h2 class="text-2xl font-semibold mb-6">Panel de Administración</h2>
 
-        <div class="bg-white shadow rounded-xl p-6 space-y-4">
-            <p class="text-gray-600">¡Bienvenido/a, {{ auth()->user()->name }}!</p>
-            <p class="text-sm text-gray-500">
-                Desde aquí más adelante podrás gestionar usuarios, supervisar ofertas, verificar identidades,
-                administrar reportes y más funciones administrativas del sistema.
-            </p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="p-5 bg-blue-100 rounded-2xl">
+            <p class="text-gray-700">Solicitudes pendientes</p>
+            <p class="text-3xl font-bold text-blue-700">{{ $pendingCount }}</p>
         </div>
-    </section>
-@endsection
+        <div class="p-5 bg-green-100 rounded-2xl">
+            <p class="text-gray-700">Usuarios verificados</p>
+            <p class="text-3xl font-bold text-green-700">{{ $verifiedCount }}</p>
+        </div>
+        <div class="p-5 bg-purple-100 rounded-2xl">
+            <p class="text-gray-700">Verificaciones de ubicación</p>
+            <p class="text-3xl font-bold text-purple-700">{{ $locationVerifiedCount }}</p>
+        </div>
+    </div>
 
+    <div class="mt-10">
+        <a href="{{ route('admin.verifications.index') }}"
+           class="inline-flex items-center bg-[var(--brand-primary)] text-white font-semibold px-6 py-3 rounded-xl hover:bg-[var(--brand-secondary)] transition">
+            Revisar solicitudes de verificación
+        </a>
+    </div>
+@endsection
