@@ -27,17 +27,41 @@ class UserProfile extends Model
         'birth_date' => 'date',
     ];
 
+    // Relaciones
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+
+    // Etiqueta legible del estado
     public function getVerificationStatusLabelAttribute(): string
     {
         return match ($this->verification_status) {
-            'pending' => 'Pendiente',
+            'pending' => 'En revisión',
             'verified' => 'Verificado',
             'rejected' => 'Rechazado',
-            default => 'Desconocido',
+            default => 'No verificado',
         };
+    }
+
+    // Helpers para control lógico
+    public function canEditSensitiveData(): bool
+    {
+        return in_array($this->verification_status, ['none', 'rejected']);
+    }
+
+    public function isPendingVerification(): bool
+    {
+        return $this->verification_status === 'pending';
+    }
+
+    public function isVerified(): bool
+    {
+        return $this->verification_status === 'verified';
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->verification_status === 'rejected';
     }
 }

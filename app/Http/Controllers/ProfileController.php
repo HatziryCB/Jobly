@@ -2,48 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\User;
 use App\Models\UserProfile;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
     public function show(User $user)
     {
         $user->loadMissing('profile');
+
         if (!$user->profile) {
-            $user->profile()->create();
+            $user->profile()->create([
+                'verification_status' => 'none',
+                'work_categories' => [],
+                'average_rating' => 0.0,
+            ]);
             $user->refresh();
         }
 
         return view('profile.show', compact('user'));
     }
+
     public function edit(User $user)
     {
         $profile = $user->profile ?? $user->profile()->create();
         $categories = [
-            'Limpieza',
-            'Pintura',
-            'Mudanza',
-            'Jardinería',
-            'Reparaciones',
-            'Electricidad',
-            'Plomería',
-            'Cuidado de niños',
-            'Cuidado de adultos mayores',
-            'Eventos',
-            'Mecánica',
-            'Construcción',
-            'Ayuda temporal',
-            'Asistencia'
+            'Limpieza', 'Pintura', 'Mudanza', 'Jardinería', 'Reparaciones',
+            'Electricidad', 'Plomería', 'Cuidado de niños', 'Cuidado de adultos mayores',
+            'Eventos', 'Mecánica', 'Construcción', 'Ayuda temporal', 'Asistencia'
         ];
 
         return view('profile.edit', [
@@ -65,14 +55,40 @@ class ProfileController extends Controller
             'zone' => 'nullable|string|max:50',
             'neighborhood' => 'nullable|string|max:100',
             'birth_date' => 'nullable|date',
-            'gender' => 'nullable|in:male,female,other',
+            'gender' => 'nullable|in:male,female,other,unspecified',
         ]);
-        //Elimina la imagen registrada
+
+        $user = auth()->user();
+
+        // Proteger edición de datos sensibles si está verificado
+        if ($user->profile->isVerified()) {
+            if ($request->hasAny(['first_name', 'last_name', 'birth_date', 'gender'])) {
+                return back()->withErrors([
+                    'error' => 'No puedes modificar datos verificados. Solicita una nueva verificación para hacerlo.'
+                ]);
+            }
+        }
+
+        // Actualizar contraseña si fue enviada
+        if ($request->filled('current_password') || $request->filled('new_password')) {
+            $request->validate([
+                'current_password' => ['required', 'current_password'],
+                'new_password' => ['required', 'confirmed', Password::min(8)
+                    ->mixedCase()->letters()->numbers()->symbols()],
+            ]);
+
+            $user->update(['password' => Hash::make($request->new_password)]);
+
+            return redirect()->route('profile.show', $profile->user_id)
+                ->with('success', 'Tu contraseña ha sido actualizada correctamente.');
+        }
+
+        //  Manejo de imagen
         if ($request->has('remove_profile_picture') && $profile->profile_picture) {
             Storage::disk('public')->delete($profile->profile_picture);
             $profile->profile_picture = null;
         }
-        // Subir nueva imagen
+
         if ($request->hasFile('profile_picture')) {
             if ($profile->profile_picture) {
                 Storage::disk('public')->delete($profile->profile_picture);
@@ -81,26 +97,11 @@ class ProfileController extends Controller
             $path = $request->file('profile_picture')->store('profiles', 'public');
             $profile->profile_picture = $path;
         }
-        if ($request->filled('current_password') || $request->filled('new_password')) {
-            $request->validate([
-                'current_password' => ['required', 'current_password'],
-                'new_password' => ['required', 'confirmed', Password::min(8)
-                    ->mixedCase()
-                    ->letters()
-                    ->numbers()
-                    ->symbols()],
-            ]);
 
-            $user = auth()->user();
-            $user->update(['password' => Hash::make($request->new_password)]);
-
-            return redirect()->route('profile.show', $profile->user_id)
-                ->with('success', 'Tu contraseña ha sido actualizada correctamente.');
-        }
-
-        // Guardar las categorías como array JSON
+        // Actualizar categorías (ya casteado)
         $profile->work_categories = $validated['work_categories'] ?? [];
 
+        // Guardar cambios
         $profile->fill($validated);
         $profile->save();
 

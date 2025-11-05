@@ -2,21 +2,40 @@
 
 @section('title', 'Perfil de usuario')
 @section('dashboard-content')
+    @php
+        $status = $profile->verification_status ?? 'none';
+        $isEditable = in_array($status, ['none', 'rejected']);
+        $u = $user ?? auth()->user();
+        $hasPending = $u && $u->identityVerification && $u->identityVerification->status === 'pending';
+    @endphp
+
     <h2 class="text-2xl font-semibold text-gray-800 mb-6">Editar Perfil</h2>
+
+    {{-- Mensajes globales --}}
+    @if (session('success'))
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if ($errors->any())
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
+            {{ $errors->first() }}
+        </div>
+    @endif
 
     <form method="POST" action="{{ route('profile.update', $profile->id) }}" enctype="multipart/form-data" class="space-y-6">
         @csrf
         @method('PUT')
 
-        {{-- === FOTO DE PERFIL === --}}
+        {{-- === FOTO Y ESTADO DE VERIFICACIÓN === --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
                 <img src="{{ $profile->profile_picture ? asset('storage/' . $profile->profile_picture) : asset('images/default-user.jpg') }}"
                      alt="Imagen de perfil"
-                     class="w-24 h-24 rounded-full object-cover border">
+                     class="w-24 h-24 rounded-full object-cover border mb-2">
 
                 <input type="file" name="profile_picture" id="profile_picture" accept="image/*"
-                       class="w-full rounded-2xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow mt-2">
+                       class="w-full rounded-xl border border-gray-300 focus:ring-indigo-200 transition-shadow mt-2">
 
                 <x-input-error :messages="$errors->get('profile_picture')" />
 
@@ -28,275 +47,89 @@
                 @endif
             </div>
 
-            {{-- === ESTADO DE VERIFICACIÓN === --}}
-            <div class="flex items-center justify-between mb-4">
+            {{-- Estado de verificación + botón --}}
+            <div class="flex flex-col justify-center space-y-3">
                 <div>
-                    <p class="text-m font-medium text-gray-700">Estado de verificación:</p>
-
-                    @php
-                        $status = $profile->verification_status ?? 'none';
-                    @endphp
-
+                    <p class="text-sm font-medium text-gray-700 mb-1">Estado de verificación:</p>
                     @if ($status === 'verified')
-                        <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-                            <img src="{{ asset('images/verified-badge.png') }}" alt="Verificado" class="h-4 w-4">
-                            Verificado
-                        </span>
+                        <span class="inline-flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
+                        <img src="{{ asset('images/verified-badge.png') }}" alt="Verificado" class="h-4 w-4"> Verificado
+                    </span>
                     @elseif ($status === 'pending')
-                        <span class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-medium">
-                            ⏳ En revisión
-                        </span>
+                        <span class="inline-flex items-center gap-2 bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-semibold">
+                        ⏳ En revisión
+                    </span>
                     @elseif ($status === 'rejected')
-                        <span class="inline-flex items-center gap-1 bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">
-                            ❌ Rechazado
-                        </span>
+                        <span class="inline-flex items-center gap-2 bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-semibold">
+                        ❌ Rechazado
+                    </span>
                     @else
-                        <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
-                            ⚪ No verificado
-                        </span>
+                        <span class="inline-flex items-center gap-2 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-semibold">
+                        ⚪ No verificado
+                    </span>
                     @endif
                 </div>
 
-                {{-- Botón principal --}}
-                @php
-                    $user = $user ?? auth()->user();
-                    $status = $profile->verification_status ?? 'none';
-                    $hasPending = $user && $user->identityVerification && $user->identityVerification->status === 'pending';
-                @endphp
+                {{-- Botón --}}
+                <a href="{{ !$hasPending ? route('verification.create') : '#' }}"
+                   @if($hasPending) aria-disabled="true" @endif
+                   class="inline-flex items-center justify-center text-white font-medium px-4 py-2 rounded-xl transition
+               {{ $hasPending ? 'bg-gray-400 cursor-not-allowed opacity-80' : 'bg-indigo-600 hover:bg-indigo-700' }}">
+                    {{ $hasPending ? 'Solicitud en revisión' : 'Solicitar verificación' }}
+                </a>
 
-            @if ($status === 'verified')
-                    <button disabled
-                            class="inline-flex items-center justify-center bg-green-500 text-white text-sm font-semibold px-4 py-2 rounded-xl cursor-not-allowed">
-                        Verificado
-                    </button>
-                @elseif ($hasPending)
-                    <button disabled
-                            class="inline-flex items-center justify-center bg-gray-400 text-white text-sm font-semibold px-4 py-2 rounded-xl opacity-80 cursor-not-allowed">
-                        En revisión
-                    </button>
-                @else
-                    <a href="{{ route('verification.create') }}"
-                       class="inline-flex items-center justify-center bg-[var(--brand-primary)] hover:bg-[var(--brand-secondary)]
-               text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200 shadow-sm">
-                        Solicitar verificación
-                    </a>
+                @if ($status === 'rejected' && $user->identityVerification?->rejection_reason)
+                    <p class="text-xs text-red-600">
+                        Motivo del rechazo: {{ $user->identityVerification->rejection_reason }}
+                    </p>
                 @endif
-
-
             </div>
-
-            {{-- Motivo de rechazo --}}
-            @if ($status === 'rejected' && $user->identityVerification?->rejection_reason)
-                <p class="text-sm text-red-600">
-                    Motivo del rechazo: {{ $user->identityVerification->rejection_reason }}
-                </p>
-            @endif
-
-
         </div>
 
-        {{-- === DATOS PERSONALES (User) === --}}
+        {{-- === DATOS PERSONALES === --}}
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {{-- Primer nombre --}}
             <div>
                 <x-input-label for="first_name" :value="'Primer nombre *'" />
-                <x-text-input id="first_name_display" type="text" class="w-full bg-gray-100"
-                              value="{{ $user->first_name }}" disabled />
-                <input type="hidden" name="first_name" value="{{ $user->first_name }}">
+                <x-text-input name="first_name" id="first_name"
+                              :readonly="!$isEditable"
+                              class="w-full {{ !$isEditable ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                              value="{{ old('first_name', $user->first_name) }}" required />
             </div>
 
-            {{-- Segundo nombre --}}
             <div>
                 <x-input-label for="second_name" :value="'Segundo nombre'" />
-                <x-text-input name="second_name" id="second_name" type="text" class="w-full"
-                              :value="old('second_name', $user->second_name)" />
+                <x-text-input name="second_name" id="second_name"
+                              :readonly="!$isEditable"
+                              class="w-full {{ !$isEditable ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                              value="{{ old('second_name', $user->second_name) }}" />
             </div>
 
-            {{-- Primer apellido --}}
             <div>
                 <x-input-label for="last_name" :value="'Primer apellido *'" />
-                <x-text-input id="last_name_display" type="text" class="w-full bg-gray-100"
-                              value="{{ $user->last_name }}" disabled />
-                <input type="hidden" name="last_name" value="{{ $user->last_name }}">
+                <x-text-input name="last_name" id="last_name"
+                              :readonly="!$isEditable"
+                              class="w-full {{ !$isEditable ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                              value="{{ old('last_name', $user->last_name) }}" required />
             </div>
 
-            {{-- Segundo apellido --}}
             <div>
                 <x-input-label for="second_last_name" :value="'Segundo apellido'" />
-                <x-text-input name="second_last_name" id="second_last_name" type="text" class="w-full"
-                              :value="old('second_last_name', $user->second_last_name)" />
+                <x-text-input name="second_last_name" id="second_last_name"
+                              :readonly="!$isEditable"
+                              class="w-full {{ !$isEditable ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                              value="{{ old('second_last_name', $user->second_last_name) }}" />
             </div>
 
-            {{-- Correo electrónico --}}
             <div>
                 <x-input-label for="email" :value="'Correo electrónico *'" />
-                <x-text-input id="email_display" type="email" class="w-full bg-gray-100"
+                <x-text-input id="email_display" type="email"
+                              class="w-full bg-gray-100 cursor-not-allowed"
                               value="{{ $user->email }}" disabled />
-                <input type="hidden" name="email" value="{{ $user->email }}">
             </div>
         </div>
 
-        {{-- === CATEGORÍAS === --}}
-        <div>
-            <label class="block text-sm font-medium mb-2">Categorías de trabajo de interés:</label>
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
-                @foreach ($categories as $category)
-                    <label class="inline-flex items-center space-x-2">
-                        <input type="checkbox" name="work_categories[]" value="{{ $category }}"
-                               @if (in_array($category, $profile->work_categories ?? [])) checked @endif
-                               class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                        <span>{{ $category }}</span>
-                    </label>
-                @endforeach
-            </div>
-        </div>
-
-        {{-- === BIO Y EXPERIENCIA === --}}
-        <div>
-            <x-input-label for="bio" :value="'Descripción personal *'" />
-            <textarea name="bio" id="bio" rows="3"
-                      class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow" required>{{ old('bio', $profile->bio) }}</textarea>
-            <x-input-error :messages="$errors->get('bio')" />
-        </div>
-
-        <div>
-            <x-input-label for="experience" :value="'Experiencia laboral *'" />
-            <textarea name="experience" id="experience" rows="4"
-                      class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow" required>{{ old('experience', $profile->experience) }}</textarea>
-            <x-input-error :messages="$errors->get('experience')" />
-        </div>
-
-        {{-- === UBICACIÓN Y OTROS === --}}
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div>
-                <x-input-label for="department" :value="'Departamento *'" />
-                <x-text-input name="department" id="department" type="text" class="w-full"
-                              :value="old('department', $profile->department)" required />
-            </div>
-            <div>
-                <x-input-label for="municipality" :value="'Municipio *'" />
-                <x-text-input name="municipality" id="municipality" type="text" class="w-full"
-                              :value="old('municipality', $profile->municipality)" required />
-            </div>
-            <div>
-                <x-input-label for="zone" :value="'Zona'" />
-                <x-text-input name="zone" id="zone" type="text" class="w-full"
-                              :value="old('zone', $profile->zone)" />
-            </div>
-            <div>
-                <x-input-label for="neighborhood" :value="'Colonia / Aldea / Barrio'" />
-                <x-text-input name="neighborhood" id="neighborhood" type="text" class="w-full"
-                              :value="old('neighborhood', $profile->neighborhood)" />
-            </div>
-            <div>
-                <x-input-label for="phone" :value="'Teléfono'" />
-                <x-text-input name="phone" id="phone" type="text" class="w-full"
-                              :value="old('phone', $user->phone)" />
-            </div>
-        </div>
-
-        {{-- === NACIMIENTO Y GÉNERO === --}}
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
-            <div>
-                <x-input-label for="birth_date" :value="'Fecha de nacimiento *'" />
-                <x-text-input type="date" name="birth_date" id="birth_date" class="w-full"
-                              value="{{ old('birth_date', $profile->birth_date ? \Carbon\Carbon::parse($profile->birth_date)->format('Y-m-d') : '') }}" required />
-                <x-input-error :messages="$errors->get('birth_date')" />
-            </div>
-
-            <div>
-                <x-input-label for="gender" :value="'Género *'" />
-                <select name="gender" id="gender" class="w-full rounded-xl border border-gray-300 focus:border-indigo-400">
-                    <option value="">Seleccione</option>
-                    <option value="male" @selected(old('gender', $profile->gender) === 'male')>Masculino</option>
-                    <option value="female" @selected(old('gender', $profile->gender) === 'female')>Femenino</option>
-                    <option value="other" @selected(old('gender', $profile->gender) === 'other')>Otro</option>
-                </select>
-                <x-input-error :messages="$errors->get('gender')" />
-            </div>
-        </div>
-
-        {{-- === CAMBIO DE CONTRASEÑA === --}}
-        <div class="border-t border-gray-200 pt-6 mt-8">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Actualizar contraseña</h3>
-
-            <div x-data="{ showOld:false, showNew:false, showConfirm:false }" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {{-- Contraseña actual --}}
-                <div class="relative">
-                    <x-input-label for="current_password" :value="'Contraseña actual *'" />
-                    <input :type="showOld ? 'text' : 'password'" id="current_password" name="current_password"
-                           class="w-full rounded-xl border-gray-300 focus:border-indigo-400 focus:ring-indigo-200 pr-10"
-                           placeholder="••••••••" />
-                    <button type="button" @click="showOld = !showOld"
-                            class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                        <svg x-show="!showOld" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                        <svg x-show="showOld" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.961 9.961 0 012.293-3.95m1.414-1.414A9.956 9.956 0 0112 5c4.478 0 8.268 2.943 9.542 7a9.953 9.953 0 01-4.147 5.17M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M3 3l18 18" />
-                        </svg>
-                    </button>
-                </div>
-
-                {{-- Nueva contraseña --}}
-                <div class="relative">
-                    <x-input-label for="new_password" :value="'Nueva contraseña *'" />
-                    <input :type="showNew ? 'text' : 'password'" id="new_password" name="new_password"
-                           class="w-full rounded-xl border-gray-300 focus:border-indigo-400 focus:ring-indigo-200 pr-10"
-                           placeholder="••••••••" />
-                    <button type="button" @click="showNew = !showNew"
-                            class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                        <svg x-show="!showNew" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                        <svg x-show="showNew" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.961 9.961 0 012.293-3.95m1.414-1.414A9.956 9.956 0 0112 5c4.478 0 8.268 2.943 9.542 7a9.953 9.953 0 01-4.147 5.17M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M3 3l18 18" />
-                        </svg>
-                    </button>
-                </div>
-
-                {{-- Confirmar nueva contraseña --}}
-                <div class="relative">
-                    <x-input-label for="new_password_confirmation" :value="'Confirmar contraseña *'" />
-                    <input :type="showConfirm ? 'text' : 'password'" id="new_password_confirmation" name="new_password_confirmation"
-                           class="w-full rounded-xl border-gray-300 focus:border-indigo-400 focus:ring-indigo-200 pr-10"
-                           placeholder="••••••••" />
-                    <button type="button" @click="showConfirm = !showConfirm"
-                            class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                        <svg x-show="!showConfirm" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                        <svg x-show="showConfirm" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.961 9.961 0 012.293-3.95m1.414-1.414A9.956 9.956 0 0112 5c4.478 0 8.268 2.943 9.542 7a9.953 9.953 0 01-4.147 5.17M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M3 3l18 18" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
+        {{-- === RESTO DE CAMPOS === --}}
+        @include('profile.partials._profile_form_fields', ['profile' => $profile, 'user' => $user, 'isEditable' => $isEditable, 'categories' => $categories])
 
         {{-- === BOTONES === --}}
         <div class="flex justify-end space-x-4 mt-4">
