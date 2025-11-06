@@ -30,9 +30,8 @@
         <div class="flex items-center gap-2 text-gray-600">
             <p class="text-gray-700 font-semibold gap-2">
                 {{ $offer->user->first_name }} {{ $offer->user->last_name }}
-                @if ($offer->profile && $offer->profile->verification_status === 'verified')
-                    <img src="{{ asset('images/verified-badge.png') }}" alt="Verificado" class="h-4 w-4">
-                @endif
+                <x-verification-badge :status="$offer->user->profile->verification_status" />
+
             </p>
 
             {{-- Calificación --}}

@@ -34,6 +34,23 @@ class   User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+    public function fullName(): string
+    {
+        return trim(
+            collect([
+                $this->first_name,
+                $this->second_name,
+                $this->last_name,
+                $this->second_last_name
+            ])->filter()->implode(' ')
+        );
+    }
+
+    public function getFullNameAttribute()
+    {
+        return $this->fullName();
+    }
+
     public function offers()
     {
         return $this->hasMany(Offer::class, 'employer_id');

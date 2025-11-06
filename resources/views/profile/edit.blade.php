@@ -4,9 +4,13 @@
 @section('dashboard-content')
     @php
         $status = $profile->verification_status ?? 'none';
-        $isEditable = in_array($status, ['none', 'rejected']);
+        $lock = $profile->lockLevel(); //  0 = sin verificación / 1 = solo identidad / 2 = identidad + residencia
         $u = $user ?? auth()->user();
         $hasPending = $u && $u->identityVerification && $u->identityVerification->status === 'pending';
+
+        // Campos editables según nivel de verificación
+        $canEditIdentity = $lock < 1;   // Si identidad verificada o pendiente → no editable
+        $canEditLocation = $lock < 2;   // Si residencia verificada o pendiente → no editable
     @endphp
 
     <h2 class="text-2xl font-semibold text-gray-800 mb-6">Editar Perfil</h2>
@@ -69,21 +73,19 @@
                     </span>
                     @endif
                 </div>
-
                 {{-- Botón --}}
                 <a href="{{ !$hasPending ? route('verification.create') : '#' }}"
                    @if($hasPending) aria-disabled="true" @endif
-                   class="inline-flex items-center justify-center text-white font-medium px-4 py-2 rounded-xl transition
-               {{ $hasPending ? 'bg-gray-400 cursor-not-allowed opacity-80' : 'bg-indigo-600 hover:bg-indigo-700' }}">
+                   class="inline-flex w-fit items-center text-white text-sm rounded-full transition
+                    {{ $hasPending ? 'bg-gray-400 cursor-not-allowed opacity-80 px-3 py-1' : 'bg-green-500 hover:bg-green-600 px-3 py-2' }}">
+                    @if(!$hasPending)
+                        <i class="fas fa-check-circle mr-1"></i>
+                    @endif
                     {{ $hasPending ? 'Solicitud en revisión' : 'Solicitar verificación' }}
                 </a>
 
-                @if ($status === 'rejected' && $user->identityVerification?->rejection_reason)
-                    <p class="text-xs text-red-600">
-                        Motivo del rechazo: {{ $user->identityVerification->rejection_reason }}
-                    </p>
-                @endif
             </div>
+
         </div>
 
         {{-- === DATOS PERSONALES === --}}
@@ -91,32 +93,32 @@
             <div>
                 <x-input-label for="first_name" :value="'Primer nombre *'" />
                 <x-text-input name="first_name" id="first_name"
-                              :readonly="!$isEditable"
-                              class="w-full {{ !$isEditable ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                              :readonly="!$canEditIdentity"
+                              class="w-full {{ !$canEditIdentity ? 'bg-gray-100 cursor-not-allowed' : '' }}"
                               value="{{ old('first_name', $user->first_name) }}" required />
             </div>
 
             <div>
                 <x-input-label for="second_name" :value="'Segundo nombre'" />
                 <x-text-input name="second_name" id="second_name"
-                              :readonly="!$isEditable"
-                              class="w-full {{ !$isEditable ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                              :readonly="!$canEditIdentity"
+                              class="w-full {{ !$canEditIdentity ? 'bg-gray-100 cursor-not-allowed' : '' }}"
                               value="{{ old('second_name', $user->second_name) }}" />
             </div>
 
             <div>
                 <x-input-label for="last_name" :value="'Primer apellido *'" />
                 <x-text-input name="last_name" id="last_name"
-                              :readonly="!$isEditable"
-                              class="w-full {{ !$isEditable ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                              :readonly="!$canEditIdentity"
+                              class="w-full {{ !$canEditIdentity ? 'bg-gray-100 cursor-not-allowed' : '' }}"
                               value="{{ old('last_name', $user->last_name) }}" required />
             </div>
 
             <div>
                 <x-input-label for="second_last_name" :value="'Segundo apellido'" />
                 <x-text-input name="second_last_name" id="second_last_name"
-                              :readonly="!$isEditable"
-                              class="w-full {{ !$isEditable ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                              :readonly="!$canEditIdentity"
+                              class="w-full {{ !$canEditIdentity ? 'bg-gray-100 cursor-not-allowed' : '' }}"
                               value="{{ old('second_last_name', $user->second_last_name) }}" />
             </div>
 
@@ -129,7 +131,14 @@
         </div>
 
         {{-- === RESTO DE CAMPOS === --}}
-        @include('profile.partials._profile_form_fields', ['profile' => $profile, 'user' => $user, 'isEditable' => $isEditable, 'categories' => $categories])
+        @include('profile.partials._profile_form_fields', [
+            'profile' => $profile,
+            'user' => $user,
+            'categories' => $categories,
+            'canEditIdentity' => $canEditIdentity,
+            'canEditLocation' => $canEditLocation,
+        ])
+
 
         {{-- === BOTONES === --}}
         <div class="flex justify-end space-x-4 mt-4">

@@ -14,7 +14,6 @@ class ProfileController extends Controller
     public function show(User $user)
     {
         $user->loadMissing('profile');
-
         if (!$user->profile) {
             $user->profile()->create([
                 'verification_status' => 'none',
@@ -23,7 +22,6 @@ class ProfileController extends Controller
             ]);
             $user->refresh();
         }
-
         return view('profile.show', compact('user'));
     }
 
@@ -36,11 +34,16 @@ class ProfileController extends Controller
             'Eventos', 'Mecánica', 'Construcción', 'Ayuda temporal', 'Asistencia'
         ];
 
+        $lock = $profile->lockLevel();
+
         return view('profile.edit', [
             'profile' => $profile,
             'categories' => $categories,
             'user' => $user,
+            'canEditIdentity' => $lock < 1,   // Si lock >=1 → identidad bloqueada
+            'canEditLocation' => $lock < 2,   // Si lock >=2 → residencia bloqueada
         ]);
+
     }
 
     public function update(Request $request, UserProfile $profile)
@@ -50,23 +53,33 @@ class ProfileController extends Controller
             'bio' => 'nullable|string|max:1000',
             'experience' => 'nullable|string|max:1000',
             'work_categories' => 'nullable|array',
-            'department' => 'nullable|string|max:100',
-            'municipality' => 'nullable|string|max:100',
+            'department' => 'required|string|max:100',
+            'municipality' => 'required|string|max:100',
             'zone' => 'nullable|string|max:50',
             'neighborhood' => 'nullable|string|max:100',
-            'birth_date' => 'nullable|date',
-            'gender' => 'nullable|in:male,female,other,unspecified',
+            'birth_date' => 'required|date',
+            'gender' => 'required|in:male,female'
         ]);
 
         $user = auth()->user();
 
-        // Proteger edición de datos sensibles si está verificado
-        if ($user->profile->isVerified()) {
-            if ($request->hasAny(['first_name', 'last_name', 'birth_date', 'gender'])) {
-                return back()->withErrors([
-                    'error' => 'No puedes modificar datos verificados. Solicita una nueva verificación para hacerlo.'
-                ]);
-            }
+        $profile = $user->profile;
+        $lock = $profile->lockLevel();
+
+        // Bloqueo en revisión → bloquear sensibles, NO bio ni categorías
+        if ($lock >= 1) {
+            $request->merge([
+                'birth_date' => $profile->birth_date,
+                'gender' => $profile->gender,
+            ]);
+        }
+
+        // Si además está residencia verificada o en revisión → bloquear ubicación
+        if ($lock >= 2) {
+            $request->merge([
+                'department' => $profile->department,
+                'municipality' => $profile->municipality,
+            ]);
         }
 
         // Actualizar contraseña si fue enviada

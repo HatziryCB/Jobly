@@ -19,11 +19,10 @@
                                      class="w-20 h-20 rounded-full object-cover border" />
                         <div>
                             <p class="text-gray-700 font-semibold flex items-center gap-2">
-                                {{ $offer->employee->first_name }} {{ $offer->employee->last_name }}
+                                {{ $candidate->employee->first_name }} {{ $candidate->employee->last_name }}
                                 @if ($candidate->profile && $candidate->profile->verification_status === 'verified')
                                     <img src="{{ asset('images/verified-badge.png') }}" alt="Verificado" class="h-4 w-4">
                                 @endif
-
                             </p>
 
                             <p class="text-sm text-gray-600">
@@ -58,7 +57,12 @@
                                      alt="Foto de perfil"
                                      class="w-20 h-20 rounded-full object-cover border" />
                         <div>
-                            <h2 class="text-2xl font-bold text-gray-800">{{ $selectedCandidate->user->first_name }} {{ $selectedCandidate->user->last_name }}</h2>
+                        <p class="text-gray-700 font-semibold flex items-center gap-2">
+                            {{ $candidate->employee->first_name }} {{ $candidate->employee->last_name }}
+                            @if ($candidate->profile && $candidate->profile->verification_status === 'verified')
+                                <img src="{{ asset('images/verified-badge.png') }}" alt="Verificado" class="h-4 w-4">
+                            @endif
+                        </p>
                             <div class="text-sm text-gray-600">{{ $selectedCandidate->municipality}}, {{ $selectedCandidate->department }}</div>
                             <div class="text-sm text-yellow-500 flex items-center">
                                 @for ($i = 0; $i < 5; $i++)
@@ -107,10 +111,11 @@
                 <div class="relative bg-white rounded-2xl py-8 cursor-pointer transition">
                     <div class="absolute bottom-3 right-3 flex gap-2">
                         {{-- Botón de mensajería --}}
-                        <a href="#"
-                           class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3  rounded-2xl text-sm flex items-center gap-1 shadow">
+                        <a href="{{ route('chat.show', $candidate->employee->id) }}"
+                           class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-2xl text-sm flex items-center gap-1 shadow">
                             <i class="fas fa-comment-dots"></i>
                         </a>
+
                         {{-- Botón de rechazar --}}
                         <form action="#" method="POST">
                             @csrf

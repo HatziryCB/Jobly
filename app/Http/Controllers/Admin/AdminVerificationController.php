@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\IdentityVerification;
+use App\Models\User;
 use App\Models\UserProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -78,49 +79,80 @@ class AdminVerificationController extends Controller
     public function show($id)
     {
         $verification = IdentityVerification::with('user.profile')->findOrFail($id);
-
-        return response()->json([
-            'html' => view('admin.verifications.partials._detail', compact('verification'))->render()
-        ]);
+        return view('admin.verifications.partials._detail', compact('verification'));
     }
 
-    public function approve($id, Request $request)
+    public function approve($id)
     {
         $verification = IdentityVerification::with('user.profile')->findOrFail($id);
 
-        // Guardar los radios
-        $verification->checks = $request->all();
+        // Marcar la solicitud como aprobada
+        $verification->update(['status' => 'approved']);
 
-        // Determinar insignia final
-        $hasIdentity = $request->dpi_ok === 'yes'
-            && $request->name_ok === 'yes'
-            && $request->birth_ok === 'yes'
-            && $request->gender_ok === 'yes'
-            && $request->photo_ok === 'yes';
+        $profile = $verification->user->profile;
 
-        $hasLocation = $request->location_ok === 'yes';
-
-        if ($hasIdentity && $hasLocation) {
-            $verification->user->profile->verification_badge = 'full';   // 🟣
-        } elseif ($hasIdentity) {
-            $verification->user->profile->verification_badge = 'identity'; // 🟦
+        // Si la solicitud incluye voucher -> verificación completa
+        if ($verification->voucher) {
+            $profile->verification_status = 'full_verified';
+        } else {
+            $profile->verification_status = 'verified';
         }
 
-        $verification->user->profile->save();
-        $verification->update(['status' => 'verified']);
+        $profile->save();
 
-        return redirect()->back()->with('success', 'Verificación aprobada');
+        return response()->json(['success' => true]);
     }
 
-
-    public function reject(Request $request, IdentityVerification $verification)
+    public function reject(Request $request, $id)
     {
+        $verification = IdentityVerification::with('user')->findOrFail($id);
+
         $verification->update([
             'status' => 'rejected',
-            'rejection_reason' => $request->rejection_reason,
+            'rejection_reason' => $request->input('rejection_reason')
         ]);
-        $verification->user->profile->update(['verification_status' => 'rejected']);
 
-        return back()->with('success', 'Solicitud rechazada.');
+        // Garantizamos existencia del perfil
+        $profile = $verification->user->profile()->firstOrCreate([
+            'user_id' => $verification->user->id
+        ]);
+
+        $profile->update([
+            'verification_status' => 'rejected'
+        ]);
+        $profile = $verification->user->profile;
+        $profile->verification_status = 'rejected';
+        $profile->save();
+
+
+        return back()->with('success', 'Solicitud rechazada correctamente.');
     }
+    public function history(Request $request)
+    {
+        $verifications = IdentityVerification::with('user')
+            ->whereIn('status', ['approved', 'rejected', 'expired'])
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($request->search, fn($q) =>
+            $q->whereHas('user', fn($u) =>
+            $u->where('first_name', 'like', "%{$request->search}%")
+                ->orWhere('last_name', 'like', "%{$request->search}%")
+                ->orWhere('email', 'like', "%{$request->search}%")
+            )
+            )
+            ->orderBy('created_at', 'desc')
+            ->paginate(12);
+
+        return view('admin.verifications.history', compact('verifications'));
+    }
+    public function userHistory($userId)
+    {
+        $verifications = IdentityVerification::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $user = User::findOrFail($userId);
+
+        return view('admin.verifications.user-history', compact('verifications', 'user'));
+    }
+
 }
