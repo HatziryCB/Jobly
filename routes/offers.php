@@ -15,7 +15,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/offers/{offer}', [OfferController::class, 'destroy'])->name('offers.destroy');
         Route::get('/my-offers', [OfferController::class, 'myOffers'])->name('employer.offers');
     });
-    Route::middleware('role:employee|employer')->group(function () {
+    Route::middleware('role:employee|employer|admin')->group(function () {
         Route::get('/offers/{offer}', [OfferController::class, 'show'])->name('offers.show');
     });
 });
