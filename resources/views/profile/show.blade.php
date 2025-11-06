@@ -29,18 +29,14 @@
                 <img src="{{ $user->profile->profile_picture ? asset('storage/' . $user->profile->profile_picture) : asset('images/default-user.jpg') }}"
                      class="w-24 h-24 rounded-full mx-auto mt-5 mb-6 object-cover border shadow-sm">
 
-                <h2 class="text-2xl font-semibold text-gray-800 flex items-center gap-2 justify-center">
-                    {{ $user->first_name }} {{ $user->last_name }}
+                <div class="text-center">
+                    <x-verification-badge
+                        :status="$user->profile->verification_status"
+                        :firstName="$user->first_name"
+                        :lastName="$user->last_name"
+                    />
+                </div>
 
-                    {{-- Insignia de verificación de identidad --}}
-                    @if($user->profile->verification_badge === 'identity')
-                        <img src="{{ asset('images/badge_identity.png') }}" class="h-5 inline-block" title="Identidad Verificada">
-                    @elseif($user->profile->verification_badge === 'full')
-                        <img src="{{ asset('images/badge_full.png') }}" class="h-5 inline-block" title="Identidad + Ubicación Verificada">
-                    @else
-                        <span class="bg-red-400 text-white text-xs rounded-2xl px-1 py-1">No verificado</span>
-                    @endif
-                </h2>
                 <p class="text-gray-500 text-sm">{{ $user->email }}</p>
             </div>
 

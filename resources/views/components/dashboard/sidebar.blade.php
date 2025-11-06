@@ -8,14 +8,16 @@
             ? asset('storage/' . $profile->profile_picture)
             : asset('images/default-user.jpg') }}"
              alt="Foto de perfil"
-             class="w-20 h-20 rounded-full object-cover border mx-auto" />
+             class="w-20 h-20 rounded-full object-cover border mx-auto mb-3" />
 
-        <div class="flex items-center gap-2">
-            <span class="font-medium text-gray-800 mx-auto mt-4">{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}</span>
-            @if (Auth::user()->profile && Auth::user()->profile->verification_status === 'verified')
-                <img src="{{ asset('images/verified-badge.png') }}" alt="Verificado" class="h-4 w-4">
-            @endif
+        <div class="flex items-center gap-2 justify-center">
+            <x-verification-badge
+                :status="$profile->verification_status"
+                :firstName="$profile->first_name"
+                :lastName="$profile->last_name"
+            />
         </div>
+
         <span class="font-light text-gray-500 mx-auto">{{ Auth::user()->email }}</span>
     </div>
 
