@@ -27,7 +27,7 @@ return new class extends Migration
 
 
             $table->date('birth_date')->nullable();
-            $table->enum('gender', ['male', 'female', 'other','unspecified'])->default('unspecified');
+            $table->enum('gender', ['male', 'female'])->default('female');
 
             $table->timestamps();
         });
