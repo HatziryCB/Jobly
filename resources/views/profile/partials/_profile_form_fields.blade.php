@@ -23,9 +23,9 @@
 </div>
 
 <div>
-    <x-input-label for="experience" :value="'Experiencia laboral *'" />
+    <x-input-label for="experience" :value="'Experiencia'" />
     <textarea name="experience" id="experience" rows="4"
-              class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow" required>{{ old('experience', $profile->experience) }}</textarea>
+              class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow">{{ old('experience', $profile->experience) }}</textarea>
     <x-input-error :messages="$errors->get('experience')" />
 </div>
 
@@ -34,35 +34,33 @@
     <div>
         <x-input-label for="department" :value="'Departamento *'" />
         <x-text-input name="department" id="department" type="text"
-                      :readonly="!$isEditable"
-                      class="w-full {{ !$isEditable ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                      :readonly="!$canEditLocation"
+                      class="w-full {{ !$canEditLocation ? 'bg-gray-100 cursor-not-allowed' : '' }}"
                       :value="old('department', $profile->department)" required />
     </div>
     <div>
         <x-input-label for="municipality" :value="'Municipio *'" />
         <x-text-input name="municipality" id="municipality" type="text"
-                      :readonly="!$isEditable"
-                      class="w-full {{ !$isEditable ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                      :readonly="!$canEditLocation"
+                      class="w-full {{ !$canEditLocation ? 'bg-gray-100 cursor-not-allowed' : '' }}"
                       :value="old('municipality', $profile->municipality)" required />
     </div>
     <div>
         <x-input-label for="zone" :value="'Zona'" />
         <x-text-input name="zone" id="zone" type="text"
-                      :readonly="!$isEditable"
-                      class="w-full {{ !$isEditable ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                      class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow"
                       :value="old('zone', $profile->zone)" />
     </div>
     <div>
         <x-input-label for="neighborhood" :value="'Colonia / Aldea / Barrio'" />
         <x-text-input name="neighborhood" id="neighborhood" type="text"
-                      :readonly="!$isEditable"
-                      class="w-full {{ !$isEditable ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                      class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow"
                       :value="old('neighborhood', $profile->neighborhood)" />
     </div>
     <div>
         <x-input-label for="phone" :value="'Teléfono'" />
         <x-text-input name="phone" id="phone" type="text"
-                      class="w-full"
+                      class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow"
                       :value="old('phone', $user->phone)" />
     </div>
 </div>
@@ -72,8 +70,8 @@
     <div>
         <x-input-label for="birth_date" :value="'Fecha de nacimiento *'" />
         <x-text-input type="date" name="birth_date" id="birth_date"
-                      :readonly="!$isEditable"
-                      class="w-full {{ !$isEditable ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                      :readonly="!$canEditIdentity"
+                      class="w-full {{ !$canEditIdentity ? 'bg-gray-100 cursor-not-allowed' : '' }}"
                       value="{{ old('birth_date', $profile->birth_date ? \Carbon\Carbon::parse($profile->birth_date)->format('Y-m-d') : '') }}" required />
         <x-input-error :messages="$errors->get('birth_date')" />
     </div>
@@ -81,13 +79,12 @@
     <div>
         <x-input-label for="gender" :value="'Género *'" />
         <select name="gender" id="gender"
-                class="w-full rounded-xl border border-gray-300 focus:border-indigo-400"
-            {{ !$isEditable ? 'disabled' : '' }}>
-            <option value="">Seleccione</option>
-            <option value="male" @selected(old('gender', $profile->gender) === 'male')>Masculino</option>
-            <option value="female" @selected(old('gender', $profile->gender) === 'female')>Femenino</option>
-            <option value="other" @selected(old('gender', $profile->gender) === 'other')>Otro</option>
+                class="w-full rounded-xl border-gray-300 {{ !$canEditIdentity ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                @if(!$canEditIdentity) disabled @endif required>
+            <option value="male" @selected($profile->gender === 'male')>Masculino</option>
+            <option value="female" @selected($profile->gender === 'female')>Femenino</option>
         </select>
+
         <x-input-error :messages="$errors->get('gender')" />
     </div>
 </div>

@@ -3,8 +3,14 @@
 @section('title', 'Gestión de verificaciones')
 
 @section('dashboard-content')
-    <h2 class="text-2xl font-semibold mb-6">Solicitudes de verificación</h2>
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-semibold">Solicitudes de verificación</h2>
 
+        <a href="{{ route('admin.verifications.history') }}"
+           class="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 text-sm">
+            <i class="fas fa-clock mr-1"></i> Historial
+        </a>
+    </div>
     {{-- FILTROS --}}
     <form method="GET" class="flex flex-wrap items-end gap-4 mb-6">
         <div>
@@ -47,7 +53,6 @@
         </button>
     </form>
 
-
     {{-- TABLA --}}
     <div class="overflow-x-auto bg-white shadow-md rounded-2xl border border-gray-200">
         <table class="w-full text-sm text-left text-gray-700">
@@ -64,7 +69,16 @@
             <tbody>
             @forelse ($verifications as $verification)
                 <tr class="border-t hover:bg-gray-50 transition">
-                    <td class="px-4 py-3 font-medium">{{ $verification->user->first_name }} {{ $verification->user->last_name }}</td>
+                    <td class="px-4 py-3 font-medium flex items-center gap-2">
+                        {{ $verification->user->first_name }} {{ $verification->user->last_name }}
+                        @php
+                            $count = $verification->user->identityVerifications->count();
+                        @endphp
+                        @if($count > 1)
+                            <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-lg">Cant. Solic. {{ $count }}</span>
+                        @endif
+                    </td>
+
                     <td class="px-4 py-3">{{ preg_replace('/(\d{4})(\d{5})(\d{4})/', '$1 $2 $3', $verification->dpi) }}</td>
 
                     <td class="px-4 py-3">
@@ -76,7 +90,6 @@
                         {{ ucfirst($verification->statusLabel) }}
                     </span>
                     </td>
-
                     <td class="px-4 py-3">
                         @if ($verification->voucher)
                             <span class="text-purple-600 font-semibold">Identidad + Ubicación</span>
@@ -100,23 +113,19 @@
             </tbody>
         </table>
     </div>
-
     <div class="mt-4">{{ $verifications->links() }}</div>
-
 
     {{-- MODAL --}}
     <div id="verificationModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-[9999] justify-center items-start pt-20">
-        <div class="bg-white rounded-2xl shadow-2xl w-[90%] max-w-5xl max-h-[90vh] overflow-y-auto relative">
+        <div class="bg-white rounded-2xl shadow-2xl w-[95%] max-w-[1200px] max-h-[92vh] overflow-y-auto relative">
             {{-- Botón cerrar --}}
             <button onclick="closeModal()"
                     class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-3xl font-bold leading-none">
                 &times;
             </button>
-
             <div id="modalContent" class="p-6"></div>
         </div>
     </div>
-
 
     <script>
         async function openModal(id) {
@@ -127,20 +136,16 @@
             modal.classList.add('flex');
 
             const response = await fetch(`/admin/verifications/${id}`);
-            const data = await response.json(); // <- IMPORTANTE
+            const data = await response.text();
+            content.innerHTML = data;
 
-            content.innerHTML = data.html;
-
-            // Re-ejecutar scripts internos de la vista
-            if (window.JV && typeof window.JV.init === 'function') {
-                window.JV.init();
-            }
+            // Aquí se inicializa la galería
+            JV.init();
         }
 
         function closeModal() {
             document.getElementById('verificationModal').classList.add('hidden');
         }
-
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/@glidejs/glide"></script>

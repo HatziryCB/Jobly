@@ -1,41 +1,36 @@
 @php
-    /** @var \App\Models\IdentityVerification $verification */
-
-    use Illuminate\Support\Facades\Storage;$vid = $verification->id;
+    $vid = $verification->id;
     $gallery = [];
-    if ($verification->dpi_front) $gallery[] = Storage::url($verification->dpi_front);
-    if ($verification->selfie)    $gallery[] = Storage::url($verification->selfie);
-    if ($verification->voucher)   $gallery[] = Storage::url($verification->voucher);
 
-    $formattedDpi = $verification->dpi
-        ? preg_replace('/(\d{4})(\d{5})(\d{4})/', '$1 $2 $3', $verification->dpi)
-        : '—';
+    use Illuminate\Support\Facades\Storage;
+
+    if ($verification->dpi_front) $gallery[] = Storage::disk('public')->url($verification->dpi_front);
+    if ($verification->selfie)    $gallery[] = Storage::disk('public')->url($verification->selfie);
+    if ($verification->voucher)   $gallery[] = Storage::disk('public')->url($verification->voucher);
+
+
+    $formattedDpi = preg_replace('/(\d{4})(\d{5})(\d{4})/', '$1 $2 $3', $verification->dpi);
 
     $fullNames = trim(($verification->user->first_name ?? '') . ' ' . ($verification->user->second_name ?? ''));
     $fullLastNames = trim(($verification->user->last_name ?? '') . ' ' . ($verification->user->second_last_name ?? ''));
-
-    $formattedDate = optional($verification->user->profile->birth_date)
-        ? \Carbon\Carbon::parse($verification->user->profile->birth_date)
-            ->locale('es')
-            ->isoFormat('DD [de] MMMM [de] YYYY')
+    $gender = $verification->user->profile->gender;
+    $formattedDate = $verification->user->profile->birth_date
+        ? \Carbon\Carbon::parse($verification->user->profile->birth_date)->locale('es')->isoFormat('DD [de] MMMM [de] YYYY')
         : '—';
 @endphp
 
-
 <div class="p-6" data-images='@json($gallery)' data-vid="{{ $vid }}">
-
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         {{-- === GALERÍA === --}}
         <div>
             <h4 class="font-semibold mb-2">Documentos del usuario</h4>
-
             <div class="glide" id="glide-{{ $vid }}">
                 <div class="glide__track" data-glide-el="track">
                     <ul class="glide__slides">
                         @foreach($gallery as $idx => $img)
                             <li class="glide__slide">
-                                <img src="{{ $img }}" class="cursor-pointer max-h-96 w-full rounded-lg object-contain"
+                                <img src="{{ $img }}" class="cursor-pointer max-h-[550px] w-full rounded-lg object-contain"
                                      onclick="JV.open({{ $vid }}, {{ $idx }})">
                             </li>
                         @endforeach
@@ -88,6 +83,14 @@
                     </td>
                 </tr>
                 <tr>
+                    <td class="py-1 font-medium">Género:</td>
+                    <td>{{ $gender }}</td>
+                    <td class="text-right">
+                        <label><input type="radio" name="gender_ok"> Sí</label>
+                        <label class="ml-3"><input type="radio" name="gender_ok"> No</label>
+                    </td>
+                </tr>
+                <tr>
                     <td class="py-1 font-medium">Fecha Nac:</td>
                     <td>{{ $formattedDate }}</td>
                     <td class="text-right">
@@ -107,81 +110,118 @@
                     </tr>
                 @endif
             </table>
+            <a href="{{ route('admin.verifications.user.history', $verification->user->id) }}"
+               class="text-sm text-indigo-600 hover:text-indigo-800 underline">
+                📚 Ver historial de verificaciones de este usuario
+            </a>
 
             {{-- Acciones --}}
-            <form action="{{ route('admin.verifications.reject', $verification->id) }}" method="POST"
-                  class="mt-4 space-y-3">
-                @csrf
-                <textarea name="rejection_reason" class="w-full border rounded-xl px-3 py-2"
-                          placeholder="Motivo (opcional)"></textarea>
-                <div class="flex justify-end gap-3">
-                    <button class="btn-reject">Rechazar</button>
-                    <button type="button" class="btn-approve" onclick="JV.approve({{ $verification->id }})">Aprobar
-                    </button>
+            @if($verification->status === 'pending')
+                <form action="{{ route('admin.verifications.reject', $verification->id) }}" method="POST" class="mt-10 space-y-3">
+                    @csrf
+                    <textarea name="rejection_reason" class="w-full border rounded-xl px-3 py-2" placeholder="Motivo (opcional)"></textarea>
+
+                    <div class="flex justify-end gap-3">
+                        <button class="btn-reject">Rechazar</button>
+                        <button type="button" class="btn-approve" onclick="JV.approve({{ $verification->id }})">Aprobar</button>
+                    </div>
+                </form>
+            @else
+                <div class="mt-10 border-t pt-4 text-center text-gray-600 text-sm">
+                    <strong>Esta solicitud ya fue: </strong>
+
+                    @if($verification->status === 'approved')
+                        <span class="text-green-600 font-semibold">✔ Aprobada</span>
+                    @elseif($verification->status === 'rejected')
+                        <span class="text-red-600 font-semibold">✘ Rechazada</span>
+                    @elseif($verification->status === 'expired')
+                        <span class="text-gray-500">⏱ Expirada</span>
+                    @endif
+                    @if($verification->rejection_reason)
+                        <p class="mt-2 italic">Motivo: "{{ $verification->rejection_reason }}"</p>
+                    @endif
                 </div>
-            </form>
+            @endif
 
         </div>
-
     </div>
     <script>
-        window.JVInit = function () {
+        window.JV = {
+            g: {},
 
-            // Configurar galería de imágenes
-            const galleries = document.querySelectorAll('[data-gallery]');
-            galleries.forEach(gal => {
-                const vid = gal.getAttribute('data-gallery');
-                const images = JSON.parse(gal.getAttribute('data-images'));
+            init() {
+                document.querySelectorAll("[data-images]").forEach(el => {
+                    const vid = el.dataset.vid;
+                    const images = JSON.parse(el.dataset.images);
 
-                if (!window.JV) window.JV = {galleries: {}};
-                window.JV.galleries[vid] = {images: images, idx: 0};
+                    this.g[vid] = { imgs: images, idx: 0 };
 
-                // Montar Glide
-                new Glide(`#glide-${vid}`, {
-                    type: 'carousel',
-                    startAt: 0,
-                    perView: 1,
-                    gap: 20,
-                }).mount();
-            });
+                    new Glide(`#glide-${vid}`, {
+                        type: 'carousel',
+                        startAt: 0,
+                        perView: 1,
+                        gap: 20,
+                    }).mount();
+                });
+            },
 
-            // Click para abrir visor
-            document.querySelectorAll('[data-viewer-open]').forEach(btn => {
-                btn.onclick = function () {
-                    const vid = this.dataset.gallery;
-                    const idx = parseInt(this.dataset.index);
-                    window.JV.galleries[vid].idx = idx;
+            open(vid, index) {
+                this.g[vid].idx = index;
+                const viewer = document.getElementById(`viewer-${vid}`);
+                const img = document.getElementById(`viewer-img-${vid}`);
+                img.src = this.g[vid].imgs[index];
+                viewer.classList.remove('hidden');
+                viewer.classList.add('flex');
+            },
 
-                    const viewer = document.getElementById(`viewer-${vid}`);
-                    const img = document.getElementById(`viewer-img-${vid}`);
-                    img.src = window.JV.galleries[vid].images[idx];
-                    viewer.classList.remove('hidden');
-                }
-            });
+            close(vid) {
+                document.getElementById(`viewer-${vid}`).classList.add('hidden');
+            },
 
-            // Botones del visor
-            document.querySelectorAll('[data-viewer-close]').forEach(btn => {
-                btn.onclick = () => btn.closest('[data-viewer]').classList.add('hidden');
-            });
+            next(vid) {
+                const g = this.g[vid];
+                g.idx = (g.idx + 1) % g.imgs.length;
+                document.getElementById(`viewer-img-${vid}`).src = g.imgs[g.idx];
+            },
 
-            // Prev / Next
-            document.querySelectorAll('[data-viewer-prev]').forEach(btn => {
-                btn.onclick = () => {
-                    const vid = btn.dataset.gallery;
-                    const g = window.JV.galleries[vid];
-                    g.idx = (g.idx - 1 + g.images.length) % g.images.length;
-                    document.getElementById(`viewer-img-${vid}`).src = g.images[g.idx];
-                };
-            });
-
-            document.querySelectorAll('[data-viewer-next]').forEach(btn => {
-                btn.onclick = () => {
-                    const vid = btn.dataset.gallery;
-                    const g = window.JV.galleries[vid];
-                    g.idx = (g.idx + 1) % g.images.length;
-                    document.getElementById(`viewer-img-${vid}`).src = g.images[g.idx];
-                };
-            });
+            prev(vid) {
+                const g = this.g[vid];
+                g.idx = (g.idx - 1 + g.imgs.length) % g.imgs.length;
+                document.getElementById(`viewer-img-${vid}`).src = g.imgs[g.idx];
+            }
         };
     </script>
+    <script>
+        function verifyBeforeApprove(id) {
+            const required = ['dpi_ok','names_ok','lastnames_ok','gender_ok','birth_ok','loc_ok'];
+            let incomplete = false;
+
+            required.forEach(name => {
+                const yes = document.querySelector(`input[name="${name}"][value="yes"]:checked`);
+                const no = document.querySelector(`input[name="${name}"][value="no"]:checked`);
+                if(!yes && !no) incomplete = true;
+            });
+
+            if (incomplete) {
+                alert("Por favor completa todos los campos de verificación antes de aprobar.");
+                return;
+            }
+
+            // Enviar aprobación
+            fetch(`/admin/verifications/${id}/approve`, {
+                method:'POST',
+                headers:{ 'X-CSRF-TOKEN':'{{ csrf_token() }}' }
+            }).then(()=>location.reload());
+        }
+
+        function verifyBeforeReject(id) {
+            const reason = document.querySelector(`#reject-form-${id} textarea`).value.trim();
+            if (reason === '') {
+                alert("Debes ingresar un motivo para rechazar la solicitud.");
+                return false; // evita envío
+            }
+            return true; // permite enviar
+        }
+    </script>
+
 </div>
