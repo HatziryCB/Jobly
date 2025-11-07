@@ -94,9 +94,17 @@
                         {{-- Botón --}}
                         <div class="mt-auto">
                             <a href="{{ route('offers.show', $offer) }}"
-                               class="inline-block mt-1 px-2 py-2 text-sm font-sm text-white bg-sky-500 hover:bg-indigo-500 rounded-2xl transition">
+                               class="inline-block mt-1 px-2 py-2 text-sm font-sm text-gray-600 bg-sky-400 hover:bg-indigo-500 rounded-2xl transition">
                                 Ver detalles
                             </a>
+                            @if ($offer->lat && $offer->lng)
+                                <button
+                                    onclick="focusMap({ lat: {{ $offer->lat }}, lng: {{ $offer->lng }} })"
+                                    class="inline-block mt-1 px-2 py-2 text-sm font-sm text-purple-800 bg-purple-200 hover:bg-indigo-500 rounded-2xl transition">
+                                    Ver en mapa
+                                </button>
+                            @endif
+
                         </div>
                     </div>
                 @empty
@@ -121,23 +129,33 @@
     {{-- Leaflet --}}
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/overlapping-marker-spiderfier-leaflet@1.0.3/oms.min.js"></script>
 
     <script>
+        let mapInstance;
+
         document.addEventListener('DOMContentLoaded', function () {
             const offers = @json($offersForMap);
-            const map = L.map('map').setView([15.7196, -88.5941], 13);
+            mapInstance = L.map('map').setView([15.7196, -88.5941], 13);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 18,
                 attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
+            }).addTo(mapInstance);
 
             offers.forEach(offer => {
                 if (offer.lat && offer.lng) {
-                    L.marker([offer.lat, offer.lng]).addTo(map)
+                    L.marker([offer.lat, offer.lng]).addTo(mapInstance)
                         .bindPopup(`<strong>${offer.title}</strong><br>${offer.location_text}<br><a href='/offers/${offer.id}'>Ver detalles</a>`);
                 }
             });
         });
+
+        function focusMap({ lat, lng }) {
+            if (mapInstance) {
+                mapInstance.setView([lat, lng], 15);
+            }
+        }
+
     </script>
 @endpush

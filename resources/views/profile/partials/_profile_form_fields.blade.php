@@ -58,10 +58,22 @@
                       :value="old('neighborhood', $profile->neighborhood)" />
     </div>
     <div>
-        <x-input-label for="phone" :value="'Teléfono'" />
-        <x-text-input name="phone" id="phone" type="text"
-                      class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow"
-                      :value="old('phone', $user->phone)" />
+        <div class="w-full">
+            <x-input-label for="phone" :value="'Teléfono'" />
+            <x-text-input
+                name="phone"
+                id="phone"
+                type="text"
+                maxlength="8"
+                pattern="\d{8}"
+                inputmode="numeric"
+                required
+                class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow"
+                :value="old('phone', $user->phone)"
+            />
+        </div>
+
+
     </div>
 </div>
 

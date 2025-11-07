@@ -35,7 +35,7 @@
 
                 {{-- Botón para Limpiar Filtros --}}
                 @if ($q || $status || $category)
-                    <a href="{{ route('employer.offers') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-xl transition w-full lg:w-auto text-center flex-shrink-0">
+                    <a href="{{ route('employee.applications') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-xl transition w-full lg:w-auto text-center flex-shrink-0">
                         <i class="fa-solid fa-xmark mr-1"></i> Limpiar
                     </a>
                 @endif

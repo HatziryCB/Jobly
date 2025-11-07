@@ -35,9 +35,17 @@
                         {{-- DPI --}}
                         <div>
                             <x-input-label for="dpi" value="DPI *" />
-                            <x-text-input id="dpi" name="dpi" inputmode="numeric" maxlength="17"
-                                          placeholder="#### ##### ####"
-                                          value="{{ old('dpi') }}" required />
+                            <x-text-input
+                                id="dpi"
+                                name="dpi"
+                                inputmode="numeric"
+                                maxlength="13"
+                                placeholder="#### ##### ####"
+                                class="w-full rounded-xl border border-gray-300 focus:border-indigo-400 focus:ring focus:ring-indigo-200 transition-shadow text-base"
+                                value="{{ old('dpi') }}"
+                                required
+                            />
+
                         </div>
 
                         {{-- DOCUMENTOS --}}

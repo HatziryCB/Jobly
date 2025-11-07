@@ -29,12 +29,14 @@
                 <img src="{{ $user->profile->profile_picture ? asset('storage/' . $user->profile->profile_picture) : asset('images/default-user.jpg') }}"
                      class="w-24 h-24 rounded-full mx-auto mt-5 mb-6 object-cover border shadow-sm">
 
-                <div class="text-center">
+                <div class="text-center mt-2">
                     <x-verification-badge
-                        :status="$user->profile->verification_status"
+                        :status="$user->verification_status"
                         :firstName="$user->first_name"
                         :lastName="$user->last_name"
+                        layout="center"
                     />
+                    <x-verification-badge-label :status="$user->verification_status" />
                 </div>
 
                 <p class="text-gray-500 text-sm">{{ $user->email }}</p>

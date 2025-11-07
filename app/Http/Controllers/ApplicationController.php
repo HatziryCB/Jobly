@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Application;
 use App\Models\Offer;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 
 class ApplicationController extends Controller
 {
+    use AuthorizesRequests;
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -90,14 +94,41 @@ class ApplicationController extends Controller
         return redirect()->route('employee.applications')->with('success', '¡Postulación enviada exitosamente!');
     }
 
-    public function accept(Application $application)
+    public function accept(Offer $offer, User $employee)
     {
-        //$this->authorize('update', $application->offer);
+        $this->authorize('update', $offer);
+
+        $application = Application::where('offer_id', $offer->id)
+            ->where('employee_id', $employee->id)
+            ->firstOrFail();
+
+        // Aceptar esta postulación
         $application->status = 'accepted';
         $application->save();
-        // Cambia estado de la oferta a "hired"
-        $application->offer->update(['status' => 'hired']);
-        return redirect()->back()->with('success', 'Candidato aceptado y oferta marcada como contratada.');
+
+        // Rechazar todas las demás
+        Application::where('offer_id', $offer->id)
+            ->where('id', '!=', $application->id)
+            ->update(['status' => 'rejected']);
+
+        // Marcar oferta como contratada
+        $offer->status = 'hired';
+        $offer->save();
+
+        return redirect()->back()->with('success', 'Candidato aceptado. Oferta marcada como contratada.');
     }
 
+    public function reject(Offer $offer, User $employee)
+    {
+        $this->authorize('update', $offer);
+
+        $application = Application::where('offer_id', $offer->id)
+            ->where('employee_id', $employee->id)
+            ->firstOrFail();
+
+        $application->status = 'rejected';
+        $application->save();
+
+        return redirect()->back()->with('success', 'Candidato rechazado.');
+    }
 }
