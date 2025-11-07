@@ -6,7 +6,6 @@
         {{-- Encabezado y Barra de Búsqueda/Filtros --}}
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
             <form method="GET" action="{{ route('employee.applications') }}" class="flex flex-wrap lg:flex-nowrap items-center gap-3">
-
                 {{-- Buscador (q) --}}
                 <input type="text" name="q" placeholder="Buscar oferta..." value="{{ $q ?? '' }}"
                        class="rounded-xl border border-gray-300 px-4 py-2 w-full lg:w-64 focus:ring-2 focus:ring-indigo-300">
@@ -44,8 +43,38 @@
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
         @forelse ($applications as $application)
+            <div class="relative border rounded-2xl p-4 shadow-sm bg-white">
+                @php
+                    $employer = $application->offer->employer;
 
-            <div class="border rounded-2xl p-4 shadow-sm bg-white">
+                    $hasChat = \App\Models\Message::where(function($q) use ($employer) {
+                        $q->where('sender_id', $employer->id)
+                          ->where('receiver_id', auth()->id());
+                    })->orWhere(function($q) use ($employer) {
+                        $q->where('sender_id', auth()->id())
+                          ->where('receiver_id', $employer->id);
+                    })->exists();
+
+                    $unreadCount = \App\Models\Message::where('receiver_id', auth()->id())
+                        ->where('sender_id', $employer->id)
+                        ->whereNull('read_at')
+                        ->count();
+                @endphp
+
+                @if ($hasChat)
+                    <div class="absolute top-3 right-3 flex items-center">
+                        <a href="{{ route('chat.index', $employer->id) }}"
+                           class="text-blue-600 hover:text-blue-800 relative">
+                            <i class="fas fa-comment-dots text-xl"></i>
+                            @if ($unreadCount > 0)
+                                <span class="absolute -top-1.5 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                        {{ $unreadCount }}
+                    </span>
+                            @endif
+                        </a>
+                    </div>
+                @endif
+
                 <h3 class="font-semibold text-xl">{{ $application->offer->title }}</h3>
                 <p> <i class="fas fa-map-marker-alt mr-2 text-purple-500"></i>{{ $application->offer->location_text }}</p>
                     <p class="text-sm"><i class="fas fa-clock text-yellow-400 mr-2"></i>
@@ -55,7 +84,7 @@
                             {{ $application->offer->duration_quantity }} {{ $application->offer->duration_unit }}
                         @endif
                     </p>
-                <p class="text-sm mb-4">
+                <p class="text-sm mb-2">
                     <i class="fas fa-money-bill-wave text-green-500 mr-2"></i>
                     Q{{ $application->offer->pay_min }} - Q{{ $application->offer->pay_max }}
                 </p>
@@ -81,7 +110,7 @@
                                 {{ $application->offer->category }}
                 </span>
                 <p class="text-m mt-2 text-gray-800">Descripción</p>
-                <p class="text-m text-gray-700 mt-2 line-clamp-4">{{ Str::limit($application->offer->description, 300) }}</p>
+                <p class="text-m text-gray-700 mt-2 line-clamp-2">{{ Str::limit($application->offer->description, 300) }}</p>
                 <p class="text-m mt-2 text-gray-800">Mensaje:</p>
                 <p class="text-gray-500 text-sm line-clamp-4 mt-1">{{ $application->message ?? 'No haz dejado mensaje' }}</p>
                 <p class="text-sm text-cyan-500 mt-1">Estado: {{ ucfirst($application->offer->status) }}</p>
@@ -92,6 +121,14 @@
                            class="bg-indigo-500 text-white px-2 py-2 rounded-xl text-sm font-medium hover:bg-indigo-600 transition-colors flex-shrink-0">
                             Ver oferta
                         </a>
+                        <form action="{{ route('applications.cancel', $application->id) }}" method="POST" onsubmit="return confirm('¿Deseas cancelar tu postulación?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="bg-red-200 text-red-700 px-2 py-2 rounded-xl text-sm font-medium hover:bg-indigo-600 transition-colors flex-shrink-0">
+                                <i class="fas fa-ban"></i> Cancelar
+                            </button>
+                        </form>
+
                     </div>
                 </div>
                 </div>

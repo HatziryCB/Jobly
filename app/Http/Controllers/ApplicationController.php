@@ -49,7 +49,7 @@ class ApplicationController extends Controller
         }
         // Obtener los resultados paginados, manteniendo los filtros en la URL
         $applications = $applications->latest()
-            ->paginate(2)
+            ->paginate(4)
             ->withQueryString();
 
 
@@ -131,6 +131,19 @@ class ApplicationController extends Controller
         $application->update(['status' => 'rejected']);
 
         return back()->with('success', 'Candidato rechazado.');
+    }
+    
+    public function cancel(Application $application)
+    {
+        abort_unless(auth()->id() === $application->employee_id, 403);
+
+        if (in_array($application->status, ['accepted', 'rejected'])) {
+            return back()->with('error', 'No puedes cancelar una postulación ya procesada.');
+        }
+
+        $application->delete();
+
+        return back()->with('success', 'Tu postulación fue cancelada exitosamente.');
     }
 
 }

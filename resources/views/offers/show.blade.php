@@ -41,7 +41,7 @@
                 @endfor
             </div>
             @role('employee')
-            <a href="{{ route('employer.show', $offer->user->id) }}"
+            <a href="{{ route('employers.show', $offer->user->id) }}"
                class="text-blue-600 hover:underline text-sm ml-2">
                 Ver perfil completo
             </a>
