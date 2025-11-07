@@ -12,24 +12,51 @@ class CandidateController extends Controller
 {
     public function index(Offer $offer)
     {
-        abort_unless(auth()->user()->hasRole('employer') && auth()->id() === $offer->employer_id, 403);
-        $candidates = $offer->applications()
+        // Solo el empleador dueño de la oferta puede ver los candidatos
+        abort_unless(
+            auth()->user()->hasRole('employer') && auth()->id() === $offer->employer_id,
+            403
+        );
+
+        // Traemos las postulaciones con el perfil del empleado
+        $applications = $offer->applications()
             ->with(['employee.profile'])
             ->orderByRaw("FIELD(status, 'accepted', 'pending', 'rejected')")
             ->get();
+
+        // Mostramos por defecto el primer candidato en el panel derecho
+        $selectedApplication = $applications->first();
+        $selectedCandidate = $selectedApplication?->employee;
+
+        return view('applications.candidates', compact(
+            'offer',
+            'applications',
+            'selectedApplication',
+            'selectedCandidate'
+        ));
+    }
+
+    public function show(Offer $offer, $employeeId)
+    {
+        abort_unless(
+            auth()->user()->hasRole('employer') && auth()->id() === $offer->employer_id,
+            403
+        );
 
         $application = $offer->applications()
             ->where('employee_id', $employeeId)
             ->with('employee.profile')
             ->firstOrFail();
 
-        return view('applications.candidate_detail', compact('offer', 'application'));
+        $selectedCandidate = $application->employee;
 
+        // Renderizamos solo el panel derecho
+        return view('applications.partials._candidate_detail', compact(
+            'offer',
+            'application',
+            'selectedCandidate'
+        ));
     }
 
-    public function show(Offer $offer, $employeeId)
-    {
-        //
-    }
 
 }

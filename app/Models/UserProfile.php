@@ -64,13 +64,14 @@ class UserProfile extends Model
     {
         return $this->verification_status === 'rejected';
     }
-    public function lockLevel()
+    public function lockLevel(): int
     {
-        return match($this->verification_status) {
-            'pending'     => 2,  // Bloquea identidad + residencia mientras está en revisión
-            'verified'    => 1,  // Solo identidad verificada
-            'full_verified' => 2, // Identidad + residencia verificada
-            default       => 0,  // Sin verificación o rechazada
+        return match ($this->verification_status) {
+            'pending'       => 2,
+            'verified'      => 1,
+            'full_verified' => 2,
+            default         => 0,
         };
     }
+
 }

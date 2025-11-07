@@ -46,11 +46,6 @@ class   User extends Authenticatable //implements MustVerifyEmail
         );
     }
 
-    public function getFullNameAttribute()
-    {
-        return $this->fullName();
-    }
-
     public function offers()
     {
         return $this->hasMany(Offer::class, 'employer_id');
@@ -73,4 +68,21 @@ class   User extends Authenticatable //implements MustVerifyEmail
             $user->profile()->create();
         });
     }
+    public function latestVerification()
+    {
+        return $this->identityVerifications()->latest()->first();
+    }
+    public function hasPendingVerification()
+    {
+        return $this->latestVerification()?->status === 'pending';
+    }
+    public function isFullyVerified()
+    {
+        return $this->profile?->verification_status === 'full_verified';
+    }
+    public function getVerificationStatusAttribute()
+    {
+        return $this->profile?->verification_status ?? 'none';
+    }
+
 }

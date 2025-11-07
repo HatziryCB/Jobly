@@ -13,6 +13,6 @@ class EmployerController extends Controller
 
         $profile = $employer->profile;
 
-        return view('employer.show', compact('employer', 'profile'));
+        return view('employers.show', compact('employer', 'profile'));
     }
 }

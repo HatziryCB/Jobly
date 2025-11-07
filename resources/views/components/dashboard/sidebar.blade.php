@@ -15,9 +15,11 @@
                 :status="$profile->user->verification_status"
                 :firstName="$profile->user->first_name"
                 :lastName="$profile->user->last_name"
-                layout="center"
+                layout="stacked"
             />
         </div>
+
+
     </div>
 
     <nav class="space-y-1">

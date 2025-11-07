@@ -31,12 +31,12 @@
 
                 <div class="text-center mt-2">
                     <x-verification-badge
-                        :status="$user->verification_status"
+                        :status="$user->profile->verification_status"
                         :firstName="$user->first_name"
                         :lastName="$user->last_name"
                         layout="center"
                     />
-                    <x-verification-badge-label :status="$user->verification_status" />
+                    <x-verification-badge-label :status="$user->profile->verification_status" />
                 </div>
 
                 <p class="text-gray-500 text-sm">{{ $user->email }}</p>
@@ -105,12 +105,19 @@
                    class="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 text-sm">
                     <i class="fas fa-edit mr-1"></i> Editar
                 </a>
+
+                @php
+                    $status = $user->profile->verification_status;
+                @endphp
+
+                @if ($status !== 'pending')
                 @role('employee|employer')
                 <a href="{{ route('verification.create') }}"
                    class="px-3 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 text-sm">
                     <i class="fas fa-check-circle mr-1"></i> Solicitar verificación
                 </a>
                 @endrole
+                @endif
             </div>
 
         </div>

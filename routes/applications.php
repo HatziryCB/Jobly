@@ -13,7 +13,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'role:employer'])->group(function () {
-    Route::get('/offers/{offer}/candidates', [CandidateController::class, 'index'])->name('offers.candidates');
+    Route::get('/offer/{offer}/candidates', [CandidateController::class, 'index'])->name('applications.candidates');
     Route::post('/applications/{application}/accept', [ApplicationController::class, 'accept'])->name('applications.accept');
     Route::post('/applications/{application}/reject', [ApplicationController::class, 'reject'])->name('applications.reject');
+    Route::get('/offer/{offer}/candidates/{employee}', [CandidateController::class, 'show'])->name('applications.candidate.show');
 });
