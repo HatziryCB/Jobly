@@ -11,6 +11,10 @@ class EmployerDashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
+        dd([
+            'user' => $user->toArray(),
+            'offers' => $user->offers->pluck('id'),
+        ]);
 
         $activeOffers = $user->offers()->where('status', 'open')->count();
         $hiredOffers = $user->offers()->where('status', 'hired')->count();

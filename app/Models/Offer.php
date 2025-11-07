@@ -32,5 +32,10 @@ class Offer extends Model
     {
         return $this->hasMany(Application::class);
     }
+    public function employer()
+    {
+        return $this->belongsTo(User::class, 'employer_id');
+    }
+
 }
 

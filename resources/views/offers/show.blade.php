@@ -40,7 +40,7 @@
                 @endfor
             </div>
             @role('employee')
-            <a href="{{ route('profile.show', $offer->user->id) }}"
+            <a href="{{ route('employer.show', $offer->user->id) }}"
                class="text-blue-600 hover:underline text-sm ml-2">
                 Ver perfil completo
             </a>
@@ -115,7 +115,7 @@
         @role('employee')
             <form method="POST" action="{{ route('applications.store', $offer->id) }}" class="mt-6">
                 @csrf
-                <textarea name="message" rows="3" class="w-full p-4 rounded-2xl border mb-3" placeholder="Dejale un mensaje al empleador..."></textarea>
+                <textarea name="message" rows="3" class="w-full p-4 rounded-2xl border mb-3" placeholder="Deja un mensaje al empleador..."></textarea>
                 <button type="submit" class="bg-purple-500 text-white font-bold px-4 py-2 rounded-full hover:bg-purple-600 transition">Postular</button>
             </form>
         @endrole
