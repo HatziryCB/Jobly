@@ -47,6 +47,7 @@
     window.addEventListener('load', () => document.body.classList.add('loaded'));
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@glidejs/glide"></script>
+<script src="https://cdn.jsdelivr.net/npm/overlapping-marker-spiderfier-leaflet@1.0.3/oms.min.js"></script>
 
 </body>
 </html>

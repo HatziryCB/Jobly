@@ -48,7 +48,10 @@ class MessageController extends Controller
             ->orderBy('created_at')
             ->get();
 
-        return view('chat.index', compact('user', 'messages'));
+        return view('chat.index', [
+            'receiver' => $user,
+            'messages' => $messages,
+        ]);
     }
 
     public function send(Request $request, $userId)

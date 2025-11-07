@@ -8,17 +8,16 @@
             ? asset('storage/' . $profile->profile_picture)
             : asset('images/default-user.jpg') }}"
              alt="Foto de perfil"
-             class="w-20 h-20 rounded-full object-cover border mx-auto mb-3" />
+             class="w-20 h-20 rounded-full object-cover border mx-auto" />
 
-        <div class="flex items-center gap-2 justify-center">
+        <div class="text-center mt-2">
             <x-verification-badge
-                :status="$profile->verification_status"
-                :firstName="$profile->first_name"
-                :lastName="$profile->last_name"
+                :status="$profile->user->verification_status"
+                :firstName="$profile->user->first_name"
+                :lastName="$profile->user->last_name"
+                layout="center"
             />
         </div>
-
-        <span class="font-light text-gray-500 mx-auto">{{ Auth::user()->email }}</span>
     </div>
 
     <nav class="space-y-1">
@@ -68,7 +67,7 @@
             <i class="fa-solid fa-user-gear w-5 mr-3"></i> Mi Perfil
         </a>
         <a href="{{ route('employee.applications') }}"
-           class="flex items-center py-2 px-3 rounded-xl transition-all duration-150 {{ str_contains($currentRoute, 'applications.index') ? $activeClass : $inactiveClass }}">
+           class="flex items-center py-2 px-3 rounded-xl transition-all duration-150 {{ str_contains($currentRoute, 'employee.applications') ? $activeClass : $inactiveClass }}">
             <i class="fa-solid fa-file-contract w-5 mr-3"></i> Mis Postulaciones
         </a>
         @endrole

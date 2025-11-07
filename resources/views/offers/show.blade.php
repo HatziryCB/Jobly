@@ -27,27 +27,36 @@
         </div>
 
         {{-- Empleador y calificación --}}
-        <div class="flex items-center gap-2 text-gray-600">
-            <p class="text-gray-700 font-semibold gap-2">
-                {{ $offer->user->first_name }} {{ $offer->user->last_name }}
-                <x-verification-badge :status="$offer->user->profile->verification_status" />
-
-            </p>
-
-            {{-- Calificación --}}
-            <span class="text-yellow-500">
-                @for($i = 1; $i <= 5; $i++)
-                    <i class="fas fa-star"></i>
+        <div class="flex items-center gap-3">
+            <x-verification-badge
+                :status="$offer->user->profile->verification_status"
+                :firstName="$offer->user->first_name"
+                :lastName="$offer->user->last_name"
+                layout="inline"
+            />
+            <div class="flex items-center text-yellow-400 text-sm">
+                @for ($i = 1; $i <= 5; $i++)
+                    <i class="fas fa-star {{ $i <= ($offer->user->profile->average_rating ?? 0) ? '' : 'text-gray-300' }}"></i>
                 @endfor
-            </span>
+            </div>
+            @role('employee')
+            <a href="{{ route('profile.show', $offer->user->id) }}"
+               class="text-blue-600 hover:underline text-sm ml-2">
+                Ver perfil completo
+            </a>
+            @endrole
         </div>
+
+
+        {{-- Estado/Tipo de verificación debajo del nombre --}}
+        <x-verification-badge-label :status="$offer->user->profile->verification_status" />
+
         {{-- Categoría --}}
         @if($offer->category)
             <span class="inline-block bg-purple-100 text-purple-700 px-4 py-1 rounded-full text-sm font-semibold mb-4">
             {{ ucfirst($offer->category) }}
             </span>
         @endif
-
 
         {{-- Información de la oferta --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center mb-8">

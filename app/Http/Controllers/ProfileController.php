@@ -12,7 +12,7 @@ use Illuminate\Validation\Rules\Password;
 class ProfileController extends Controller
 {
     public function show(User $user)
-    {
+    {   //abort_unless(auth()->user()->hasRole('employee'), 403);
         $user->loadMissing('profile');
         if (!$user->profile) {
             $user->profile()->create([
@@ -49,7 +49,7 @@ class ProfileController extends Controller
     public function update(Request $request, UserProfile $profile)
     {
         $validated = $request->validate([
-            'profile_picture' => 'nullable|image|max:2048',
+            'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'bio' => 'nullable|string|max:1000',
             'experience' => 'nullable|string|max:1000',
             'work_categories' => 'nullable|array',
@@ -58,15 +58,21 @@ class ProfileController extends Controller
             'zone' => 'nullable|string|max:50',
             'neighborhood' => 'nullable|string|max:100',
             'birth_date' => 'required|date',
-            'gender' => 'required|in:male,female'
+            'gender' => 'required|in:male,female',
+
+            // Campos de User
+            'first_name' => 'required|string|max:255',
+            'second_name' => 'nullable|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'second_last_name' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:20',
         ]);
 
         $user = auth()->user();
-
         $profile = $user->profile;
         $lock = $profile->lockLevel();
 
-        // Bloqueo en revisión → bloquear sensibles, NO bio ni categorías
+        // Bloqueo por verificación
         if ($lock >= 1) {
             $request->merge([
                 'birth_date' => $profile->birth_date,
@@ -74,7 +80,6 @@ class ProfileController extends Controller
             ]);
         }
 
-        // Si además está residencia verificada o en revisión → bloquear ubicación
         if ($lock >= 2) {
             $request->merge([
                 'department' => $profile->department,
@@ -82,7 +87,7 @@ class ProfileController extends Controller
             ]);
         }
 
-        // Actualizar contraseña si fue enviada
+        // Actualizar contraseña
         if ($request->filled('current_password') || $request->filled('new_password')) {
             $request->validate([
                 'current_password' => ['required', 'current_password'],
@@ -96,12 +101,13 @@ class ProfileController extends Controller
                 ->with('success', 'Tu contraseña ha sido actualizada correctamente.');
         }
 
-        //  Manejo de imagen
+        // Eliminar foto actual si se pidió
         if ($request->has('remove_profile_picture') && $profile->profile_picture) {
             Storage::disk('public')->delete($profile->profile_picture);
             $profile->profile_picture = null;
         }
 
+        // Subir nueva foto
         if ($request->hasFile('profile_picture')) {
             if ($profile->profile_picture) {
                 Storage::disk('public')->delete($profile->profile_picture);
@@ -111,14 +117,21 @@ class ProfileController extends Controller
             $profile->profile_picture = $path;
         }
 
-        // Actualizar categorías (ya casteado)
-        $profile->work_categories = $validated['work_categories'] ?? [];
+        // Actualizar campos del usuario
+        $user->first_name = $validated['first_name'];
+        $user->second_name = $validated['second_name'] ?? null;
+        $user->last_name = $validated['last_name'];
+        $user->second_last_name = $validated['second_last_name'] ?? null;
+        $user->phone = $validated['phone'] ?? null;
+        $user->save();
 
-        // Guardar cambios
+        // Actualizar perfil
+        $profile->work_categories = $validated['work_categories'] ?? [];
         $profile->fill($validated);
         $profile->save();
 
         return redirect()->route('profile.show', $profile->user_id)
             ->with('success', 'Perfil actualizado exitosamente.');
     }
+
 }

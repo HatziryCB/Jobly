@@ -25,12 +25,13 @@ class OfferController extends Controller
             $query->where('category', $category)
             )
             ->latest();
-        $offers = $offersQuery->paginate(10);
 
-        $offersForMap = $offersQuery
+        $offersForMap = (clone $offersQuery)
             ->whereNotNull('lat')
             ->whereNotNull('lng')
             ->get(['id', 'title', 'lat', 'lng', 'location_text']);
+
+        $offers = $offersQuery->paginate(10);
 
         return view('offers.index', compact('offers', 'offersForMap', 'q', 'category'));
     }
@@ -166,11 +167,10 @@ class OfferController extends Controller
     }
     public function candidates(Offer $offer)
     {
-        //$this->authorize('update', $offer);
+        $applications = $offer->applications()->with(['employee.profile'])->get();
+        $selectedApplication = $applications->first();
+        $selectedCandidate = $selectedApplication?->employee;
 
-        $candidates = $offer->applications()->with(['employee.profile'])->get();
-        $selectedCandidate = $candidates->first()?->employee->profile;
-
-        return view('applications.candidates', compact('candidates', 'selectedCandidate', 'offer'));
+        return view('applications.candidates', compact('applications', 'selectedCandidate', 'selectedApplication', 'offer'));
     }
 }

@@ -4,136 +4,142 @@
     <div class="flex flex-col md:flex-row gap-4">
         {{-- Lista de candidatos a la izquierda --}}
         <div class="w-full md:w-1/3 space-y-4 overflow-y-auto max-h-[70vh] pr-2">
-            @forelse ($candidates as $candidate)
-                <div class="bg-white rounded-2xl shadow p-4 cursor-pointer hover:shadow-md transition"
-                     onclick="window.location='{{ route('offers.candidates.show', [$offer->id, $candidate->employee_id]) }}'">
+            @forelse ($applications as $application)
+                @php
+                    $candidate = $application->employee; // Usuario completo
+                    $profile = $candidate->profile;
+                @endphp
+
+                <div class="bg-white rounded-2xl shadow p-4 hover:shadow-md transition cursor-pointer relative">
+                    @if ($application->status === 'accepted')
+                        <div class="absolute bottom-2 right-2 bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full shadow">
+                            Contratado
+                        </div>
+                    @elseif ($application->status === 'rejected')
+                        <div class="absolute bottom-2 right-2 bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full shadow">
+                            Rechazado
+                        </div>
+                    @endif
+
                     <div class="flex items-center gap-4">
-                        @php
-                            $profile = auth()->user()->profile;
-                        @endphp
+                        <img src="{{ $profile->profile_picture ? asset('storage/' . $profile->profile_picture) : asset('images/default-user.jpg') }}"
+                             class="w-14 h-14 rounded-full object-cover border" />
 
-                        <img src="{{ $profile && $profile->profile_picture
-                                    ? asset('storage/' . $profile->profile_picture)
-                                    : asset('images/default-user.jpg') }}"
-                                     alt="Foto de perfil"
-                                     class="w-20 h-20 rounded-full object-cover border" />
                         <div>
-                            <p class="text-gray-700 font-semibold flex items-center gap-2">
-                                {{ $candidate->employee->first_name }} {{ $candidate->employee->last_name }}
-                                @if ($candidate->profile && $candidate->profile->verification_status === 'verified')
-                                    <img src="{{ asset('images/verified-badge.png') }}" alt="Verificado" class="h-4 w-4">
-                                @endif
-                            </p>
+                            <div class="flex items-center gap-2 font-semibold text-gray-800">
+                                <x-verification-badge :status="$profile->verification_status" :firstName="$candidate->first_name" :lastName="$candidate->last_name" layout="inline"/>
+                            </div>
 
-                            <p class="text-sm text-gray-600">
-                                {{ $selectedCandidate->municipality}}, {{ $selectedCandidate->department }}
-                            </p>
-                            <div class="text-sm text-yellow-500 flex items-center">
+                            <p class="text-sm text-gray-600">{{ $profile->municipality }}, {{ $profile->department }}</p>
+
+                            <div class="text-yellow-500 text-sm">
                                 @for ($i = 1; $i <= 5; $i++)
-                                    <i class="fas fa-star{{ $i <= round($candidate->employee->profile->average_rating) ? '' : '-o' }}"></i>
+                                    <i class="fas fa-star {{ $i <= ($profile->average_rating ?? 0) ? '' : 'text-gray-300' }}"></i>
                                 @endfor
                             </div>
                         </div>
                     </div>
+
                 </div>
             @empty
                 <p class="text-gray-600">No hay candidatos aún.</p>
             @endforelse
-
         </div>
 
         {{-- Detalle del candidato a la derecha --}}
         <div class="w-full md:w-2/3 overflow-y-auto max-h-[70vh]">
+
             @isset($selectedCandidate)
+
+                @php
+                    $profile = $selectedCandidate->profile;
+                @endphp
+
                 <div class="bg-white rounded-2xl shadow p-6">
                     <div class="flex items-center gap-6 border-b pb-4 mb-4">
-                        @php
-                            $profile = auth()->user()->profile;
-                        @endphp
 
-                        <img src="{{ $profile && $profile->profile_picture
-                                    ? asset('storage/' . $profile->profile_picture)
-                                    : asset('images/default-user.jpg') }}"
-                                     alt="Foto de perfil"
-                                     class="w-20 h-20 rounded-full object-cover border" />
+                        <img src="{{ $profile->profile_picture ? asset('storage/'.$profile->profile_picture) : asset('images/default-user.jpg') }}"
+                             class="w-20 h-20 rounded-full object-cover border">
+
                         <div>
-                        <p class="text-gray-700 font-semibold flex items-center gap-2">
-                            {{ $candidate->employee->first_name }} {{ $candidate->employee->last_name }}
-                            @if ($candidate->profile && $candidate->profile->verification_status === 'verified')
-                                <img src="{{ asset('images/verified-badge.png') }}" alt="Verificado" class="h-4 w-4">
-                            @endif
-                        </p>
-                            <div class="text-sm text-gray-600">{{ $selectedCandidate->municipality}}, {{ $selectedCandidate->department }}</div>
-                            <div class="text-sm text-yellow-500 flex items-center">
-                                @for ($i = 0; $i < 5; $i++)
-                                    <i class="fas fa-star{{ $i < $selectedCandidate->user->average_rating ? '' : '-o' }}"></i>
+                            <x-verification-badge
+                                :status="$profile->verification_status"
+                                :firstName="$selectedCandidate->first_name"
+                                :lastName="$selectedCandidate->last_name"
+                                layout="inline"
+                            />
+
+                            <x-verification-badge-label :status="$profile->verification_status" />
+
+                            <p class="text-sm text-gray-600 mt-1">
+                                {{ $profile->municipality }}, {{ $profile->department }}
+                            </p>
+
+                            <div class="text-yellow-500 text-sm mb-1">
+                                @for ($i = 1; $i <= 5; $i++)
+                                    <i class="fas fa-star {{ $i <= ($profile->average_rating ?? 0) ? '' : 'text-gray-300' }}"></i>
                                 @endfor
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white rounded-xl space-y-4">
-                        <p><i class="fas fa-phone mr-2 text-amber-500"></i>{{ $selectedCandidate->user->phone ?? 'No especificado' }}</p>
 
-                        <p class="space-y-2 my-2">
-                            <i class="fas fa-calendar-alt mr-2 text-sky-500"></i>
-                            {{ $selectedCandidate && $selectedCandidate->birth_date
-                                ? \Carbon\Carbon::parse($selectedCandidate->birth_date)->format('d/m/Y')
-                                : 'No especificado' }}
-                        </p>
-                        @php
-                            $generos = [
-                                'male' => 'Masculino',
-                                'female' => 'Femenino',
-                                'other' => 'Otro',
-                            ];
-                        @endphp
-                        <p><i class="fas fa-venus-mars mr-2 text-purple-500"></i>{{ $generos[$selectedCandidate->gender] ?? 'No especificado' }}</p>
-                        <p><i class="fas fa-map-marker-alt mr-2 text-rose-500"></i>{{ $selectedCandidate->municipality }}, {{ $selectedCandidate->department }} , zona {{ $selectedCandidate->zone }}, {{ $selectedCandidate->neighborhood }}.</p>
-                        <div>
-                            <h3 class="font-semibold text-gray-700">Experiencia</h3>
-                            <p class="text-gray-600">{{ $selectedCandidate->experience ?? 'No disponible' }}</p>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold text-gray-700">Descripción personal</h3>
-                            <p class="text-gray-600">{{ $selectedCandidate->bio ?? 'No disponible' }}</p>
-                        </div>
-                        <h3 class="font-semibold text-lg mb-2">Categorías de interes</h3>
-                        @if(!empty($selectedCandidate->work_categories))
-                            @foreach($selectedCandidate->work_categories as $cat)
-                                <span class="inline-block bg-purple-100 text-purple-800 text-xs px-3 py-2 rounded-full mr-2">{{ $cat }}</span>
-                            @endforeach
-                        @else
-                            <p class="text-gray-500">No seleccionadas.</p>
-                        @endif
+                    <div class="space-y-3">
+                        <p><i class="fas fa-phone text-amber-500 mr-2"></i>{{ $selectedCandidate->phone ?? 'No especificado' }}</p>
+                        <p><i class="fas fa-calendar text-sky-500 mr-2"></i>{{ $profile->birth_date ? \Carbon\Carbon::parse($profile->birth_date)->format('d/m/Y') : 'No especificado' }}</p>
+                        <p><i class="fas fa-venus-mars text-purple-500 mr-2"></i>{{ ['male'=>'Masculino','female'=>'Femenino','other'=>'Otro'][$profile->gender] ?? 'No especificado' }}</p>
+                        <p><i class="fas fa-map-marker-alt text-rose-500 mr-2"></i>{{ $profile->municipality }}, {{ $profile->department }}</p>
+
+                        <h3 class="font-semibold">Experiencia</h3>
+                        <p class="text-gray-700">{{ $profile->experience ?? 'No disponible' }}</p>
+
+                        <h3 class="font-semibold">Descripción personal</h3>
+                        <p class="text-gray-700">{{ $profile->bio ?? 'No disponible' }}</p>
+
+                        <h3 class="font-semibold">Categorías de interés</h3>
+                        @forelse($profile->work_categories ?? [] as $cat)
+                            <span class="bg-purple-100 text-purple-700 text-xs px-3 py-1 rounded-full">{{ $cat }}</span>
+                        @empty
+                            <p class="text-gray-500 text-sm">No seleccionadas.</p>
+                        @endforelse
                     </div>
+                    @php
+                        $applicationId = $application->id;
+                    @endphp
+                    @php
+                        $application = $offer->applications()->where('employee_id', $selectedCandidate->id)->first();
+                    @endphp
+
+                    @if ($application && $application->status === 'accepted')
+                        <div class="text-green-600 font-semibold mb-2">Este candidato fue contratado.</div>
+                        <a href="{{ route('chat.show', $selectedCandidate->id) }}" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-2xl text-sm flex items-center gap-1 shadow">
+                            <i class="fas fa-comment-dots"></i> Mensajear
+                        </a>
+                    @elseif ($application && $application->status === 'rejected')
+                        <div class="text-red-600 font-semibold mb-2">Candidato rechazado.</div>
+                    @else
+                        <div class="flex justify-end gap-3 mt-6">
+                            <a href="{{ route('chat.show', $selectedCandidate->id) }}" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-2xl text-sm flex items-center gap-1 shadow">
+                                <i class="fas fa-comment-dots"></i> Mensajear
+                            </a>
+
+                            <form action="{{ route('applications.reject', [$offer->id, $selectedCandidate->id]) }}" method="POST">
+                                @csrf
+                                <button class="bg-gray-200 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-2xl text-sm flex items-center gap-1 shadow">
+                                    <i class="fas fa-times-circle"></i> Rechazar
+                                </button>
+                            </form>
+
+                            <form action="{{ route('applications.accept', [$offer->id, $selectedCandidate->id]) }}" method="POST">
+                                @csrf
+                                <button class="bg-green-300 hover:bg-blue-200 text-green-800 px-3 py-1 rounded-2xl text-sm flex items-center gap-1 shadow">
+                                    <i class="fas fa-check-circle"></i> Aceptar
+                                </button>
+                            </form>
+                        </div>
+                    @endif
                 </div>
             @endisset
-                <div class="relative bg-white rounded-2xl py-8 cursor-pointer transition">
-                    <div class="absolute bottom-3 right-3 flex gap-2">
-                        {{-- Botón de mensajería --}}
-                        <a href="{{ route('chat.show', $candidate->employee->id) }}"
-                           class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-2xl text-sm flex items-center gap-1 shadow">
-                            <i class="fas fa-comment-dots"></i>
-                        </a>
-
-                        {{-- Botón de rechazar --}}
-                        <form action="#" method="POST">
-                            @csrf
-                            <button type="submit"
-                                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-2xl text-sm shadow">
-                                Rechazar
-                            </button>
-                        </form>
-                        {{-- Botón de aceptar --}}
-                        <form action="{{ route('applications.accept', $candidate->id) }}" method="POST">
-                            @csrf
-                            <button type="submit"
-                                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-2xl text-sm shadow">
-                                Aceptar
-                            </button>
-                        </form>
-                    </div>
-                </div>
         </div>
+
     </div>
 @endsection

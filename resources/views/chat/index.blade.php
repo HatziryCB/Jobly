@@ -1,47 +1,30 @@
 @extends('layouts.dashboard')
 
+@section('title', 'Chat')
+
 @section('dashboard-content')
-    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow p-6 flex flex-col h-[75vh]">
 
-        <h2 class="text-xl font-semibold mb-4">Chat con {{ $receiver->first_name }} {{ $receiver->last_name }}</h2>
+    <h2 class="text-xl font-semibold mb-4">
+        {{ $receiver->first_name }} {{ $receiver->last_name }}
+    </h2>
 
-        <div id="chatBox" class="flex-1 overflow-y-auto space-y-3 p-2 border rounded-lg bg-gray-50">
-            @foreach($messages as $m)
-                <div class="flex {{ $m->sender_id == auth()->id() ? 'justify-end' : 'justify-start' }}">
-                    <div class="px-4 py-2 rounded-xl text-sm max-w-xs
-                    {{ $m->sender_id == auth()->id() ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-800' }}">
-                        {{ $m->body }}
-                    </div>
+    <div class="bg-white rounded-2xl border p-4 h-[60vh] overflow-y-auto mb-4">
+        @forelse($messages as $msg)
+            <div class="mb-2 flex {{ $msg->sender_id === auth()->id() ? 'justify-end' : 'justify-start' }}">
+                <div class="{{ $msg->sender_id === auth()->id() ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-800' }} px-3 py-2 rounded-xl max-w-[70%]">
+                    <div class="text-sm">{{ $msg->body }}</div>
+                    <div class="text-[10px] opacity-70 mt-1">{{ $msg->created_at->format('d/m/Y H:i') }}</div>
                 </div>
-            @endforeach
-        </div>
-
-        <form id="chatForm" class="flex mt-4">
-            <input type="text" name="body" id="messageInput"
-                   class="flex-1 border rounded-xl px-3 py-2 focus:ring-indigo-300"
-                   placeholder="Escribe un mensaje...">
-            <button class="ml-3 px-4 py-2 bg-indigo-600 text-white rounded-xl">Enviar</button>
-        </form>
+            </div>
+        @empty
+            <p class="text-gray-500 text-sm">Aún no hay mensajes.</p>
+        @endforelse
     </div>
 
-    <script>
-        document.getElementById('chatForm').addEventListener('submit', async function(e){
-            e.preventDefault();
+    <form action="{{ route('chat.send', $receiver->id) }}" method="POST" class="flex gap-2">
+        @csrf
+        <input type="text" name="body" class="flex-1 border rounded-xl px-3 py-2" placeholder="Escribe un mensaje..." required>
+        <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl">Enviar</button>
+    </form>
 
-            const body = document.getElementById('messageInput').value;
-
-            const res = await fetch("{{ route('chat.send', $receiver->id) }}", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "X-CSRF-TOKEN": "{{ csrf_token() }}" },
-                body: JSON.stringify({ body })
-            });
-
-            let chatBox = document.getElementById('chatBox');
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            if(res.ok){
-                location.reload();
-            }
-        });
-    </script>
 @endsection

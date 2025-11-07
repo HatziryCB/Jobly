@@ -14,9 +14,11 @@
                              alt="Foto de perfil"
                              class="w-20 h-20 rounded-full object-cover border mx-auto" />
                 <div>
-                    <h2 class="text-2xl font-bold text-gray-800">
-                        {{ $application->employee->first_name }} {{ $application->employee->last_name }}
-                    </h2>
+                    <x-verification-badge
+                        :status="$application->employee->verification_status"
+                        :firstName="$application->employee->first_name"
+                        :lastName="$application->employee->last_name"
+                    />
                     <div class="text-sm text-gray-600">{{ $application->employee->profile->municipality ?? 'Ubicación no disponible' }}</div>
                     <div class="text-sm text-yellow-500 flex items-center mt-1">
                         @for ($i = 0; $i < 5; $i++)
