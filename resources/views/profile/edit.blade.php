@@ -6,11 +6,11 @@
         $status = $profile->verification_status ?? 'none';
         $lock = $profile->lockLevel(); //  0 = sin verificación / 1 = solo identidad / 2 = identidad + residencia
         $u = $user ?? auth()->user();
-        $hasPending = $u && $u->identityVerification && $u->identityVerification->status === 'pending';
+        $hasPending = $u->hasPendingVerification();
 
         // Campos editables según nivel de verificación
-        $canEditIdentity = $lock < 1;   // Si identidad verificada o pendiente → no editable
-        $canEditLocation = $lock < 2;   // Si residencia verificada o pendiente → no editable
+        $canEditIdentity = $lock < 1;
+        $canEditLocation = $lock < 2;
     @endphp
 
     <h2 class="text-2xl font-semibold text-gray-800 mb-6">Editar Perfil</h2>
@@ -55,23 +55,28 @@
             <div class="flex flex-col justify-center space-y-3">
                 <div>
                     <p class="text-sm font-medium text-gray-700 mb-1">Estado de verificación:</p>
-                    @if ($status === 'verified')
-                        <span class="inline-flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
-                        <img src="{{ asset('images/verified-badge.png') }}" alt="Verificado" class="h-4 w-4"> Verificado
-                    </span>
-                    @elseif ($status === 'pending')
+                    @if ($profile->verification_status === 'full_verified')
+                        <span class="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-semibold">
+                            <img src="{{ asset('images/verified-badge.svg') }}" alt="Verificado" class="h-4 w-4"> Verificación completa
+                        </span>
+                    @elseif ($profile->verification_status === 'verified')
+                        <span class="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
+                            <img src="{{ asset('images/verified-badge.svg') }}" alt="Verificado" class="h-4 w-4"> Identidad verificada
+                        </span>
+                    @elseif ($profile->verification_status === 'pending')
                         <span class="inline-flex items-center gap-2 bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-semibold">
-                        ⏳ En revisión
-                    </span>
-                    @elseif ($status === 'rejected')
+                            ⏳ En revisión
+                        </span>
+                    @elseif ($profile->verification_status === 'rejected')
                         <span class="inline-flex items-center gap-2 bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-semibold">
-                        ❌ Rechazado
-                    </span>
+                            ❌ Rechazado
+                        </span>
                     @else
                         <span class="inline-flex items-center gap-2 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-semibold">
-                        ⚪ No verificado
-                    </span>
+                            ⚪ No verificado
+                        </span>
                     @endif
+
                 </div>
                 {{-- Botón --}}
                 <a href="{{ !$hasPending ? route('verification.create') : '#' }}"

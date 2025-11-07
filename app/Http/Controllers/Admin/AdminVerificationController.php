@@ -89,9 +89,11 @@ class AdminVerificationController extends Controller
         // Marcar la solicitud como aprobada
         $verification->update(['status' => 'approved']);
 
-        $profile = $verification->user->profile;
+        // Obtener usuario y perfil
+        $user = $verification->user;
+        $profile = $user->profile;
 
-        // Si la solicitud incluye voucher -> verificación completa
+        // 🔹 Si la solicitud incluye comprobante de domicilio → verificación completa
         if ($verification->voucher) {
             $profile->verification_status = 'full_verified';
         } else {
@@ -100,33 +102,40 @@ class AdminVerificationController extends Controller
 
         $profile->save();
 
+        // 🔹 Expirar otras solicitudes pendientes del mismo usuario
+        IdentityVerification::where('user_id', $user->id)
+            ->where('id', '!=', $verification->id)
+            ->where('status', 'pending')
+            ->update(['status' => 'expired']);
+
         return response()->json(['success' => true]);
     }
 
+
     public function reject(Request $request, $id)
     {
-        $verification = IdentityVerification::with('user')->findOrFail($id);
+        $verification = IdentityVerification::with('user.profile')->findOrFail($id);
 
+        // Marcar como rechazada
         $verification->update([
             'status' => 'rejected',
             'rejection_reason' => $request->input('rejection_reason')
         ]);
 
-        // Garantizamos existencia del perfil
-        $profile = $verification->user->profile()->firstOrCreate([
-            'user_id' => $verification->user->id
-        ]);
-
-        $profile->update([
-            'verification_status' => 'rejected'
-        ]);
         $profile = $verification->user->profile;
-        $profile->verification_status = 'rejected';
-        $profile->save();
 
+        // Actualizar estado del perfil
+        $profile->update(['verification_status' => 'rejected']);
+
+        // Expirar otras solicitudes pendientes
+        IdentityVerification::where('user_id', $verification->user_id)
+            ->where('id', '!=', $verification->id)
+            ->where('status', 'pending')
+            ->update(['status' => 'expired']);
 
         return back()->with('success', 'Solicitud rechazada correctamente.');
     }
+
     public function history(Request $request)
     {
         $verifications = IdentityVerification::with('user')

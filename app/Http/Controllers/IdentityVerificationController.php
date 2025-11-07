@@ -43,10 +43,11 @@ class IdentityVerificationController extends Controller
 
         if (!empty($missing)) {
             $missingFields = implode(', ', $missing);
-            session()->flash('warning', "Faltan datos esenciales de identidad ($missingFields).
-            Completa esta información antes de solicitar la verificación.
-            Sin estos datos, tu solicitud será rechazada automáticamente.");
-        } elseif (empty($profile->department) || empty($profile->municipality)) {
+            return redirect()->route('profile.edit', $user->profile->id)
+                ->with('warning', "Faltan datos esenciales de identidad ($missingFields).
+                        Completa esta información antes de solicitar la verificación.");
+        }
+        elseif (empty($profile->department) || empty($profile->municipality)) {
             session()->flash('info', "Tu identidad está completa.
             Si adjuntas un comprobante de residencia, también podrás obtener la verificación de ubicación.");
         }
@@ -130,6 +131,10 @@ class IdentityVerificationController extends Controller
                 ? $request->file('voucher')->store($basePath, 'public')
                 : null,
         ];
+        // Expirar solicitudes anteriores
+        IdentityVerification::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->update(['status' => 'expired']);
 
         // Registrar solicitud
         IdentityVerification::create([

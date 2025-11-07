@@ -84,7 +84,7 @@
                             Q{{ $offer->pay_min ?? 0 }} - Q{{ $offer->pay_max ?? 0 }}
                         </p>
                         <div class="flex gap-2">
-                            <a href="{{ route('offers.candidates', $offer->id) }}" class="bg-blue-400 hover:bg-blue-500 text-white px-2 py-1 rounded-2xl text-xs">
+                            <a href="{{ route('applications.candidates', $offer->id) }}" class="bg-blue-400 hover:bg-blue-500 text-white px-2 py-1 rounded-2xl text-xs">
                                 Ver candidatos
                             </a>
                             <a href="{{ route('offers.show', $offer) }}" class="text-indigo-300 hover:text-indigo-400">

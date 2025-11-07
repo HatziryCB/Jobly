@@ -30,4 +30,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })
+    ->withSchedule(function (Illuminate\Console\Scheduling\Schedule $schedule) {
+        // Ejecutar el comando todos los días a medianoche
+        $schedule->command('verifications:expire')->dailyAt('00:00');
+    })
+
     ->create();

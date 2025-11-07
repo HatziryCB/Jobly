@@ -34,6 +34,7 @@
                 :lastName="$offer->user->last_name"
                 layout="inline"
             />
+
             <div class="flex items-center text-yellow-400 text-sm">
                 @for ($i = 1; $i <= 5; $i++)
                     <i class="fas fa-star {{ $i <= ($offer->user->profile->average_rating ?? 0) ? '' : 'text-gray-300' }}"></i>
@@ -46,10 +47,6 @@
             </a>
             @endrole
         </div>
-
-
-        {{-- Estado/Tipo de verificación debajo del nombre --}}
-        <x-verification-badge-label :status="$offer->user->profile->verification_status" />
 
         {{-- Categoría --}}
         @if($offer->category)

@@ -8,13 +8,11 @@
 
             <div>
                 <x-verification-badge
-                    :status="$profile->verification_status"
-                    :firstName="$employer->first_name"
-                    :lastName="$employer->last_name"
-                    layout="inline"
+                    :status="$profile->user->verification_status"
+                    :firstName="$profile->user->first_name"
+                    :lastName="$profile->user->last_name"
+                    layout="stacked"
                 />
-
-                <x-verification-badge-label :status="$profile->verification_status" />
 
                 <p class="text-sm text-gray-600 mt-1">
                     {{ $profile->municipality }}, {{ $profile->department }}

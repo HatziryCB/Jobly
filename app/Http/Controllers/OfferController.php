@@ -165,12 +165,84 @@ class OfferController extends Controller
         ];
         return view('employer.offers', compact('offers', 'categories', 'q', 'status', 'category'));
     }
-    public function candidates(Offer $offer)
-    {
-        $applications = $offer->applications()->with(['employee.profile'])->get();
-        $selectedApplication = $applications->first();
-        $selectedCandidate = $selectedApplication?->employee;
 
-        return view('applications.candidates', compact('applications', 'selectedCandidate', 'selectedApplication', 'offer'));
+    // CONTRATACIÓN  //
+
+    //Empleador selecciona a un candidato.
+    public function hireCandidate($offerId, $candidateId)
+    {
+        $offer = Offer::findOrFail($offerId);
+        // Validar permisos
+        abort_unless(auth()->id() === $offer->employer_id, 403);
+
+        // Cambiar estado y registrar candidato
+        $offer->update([
+            'status' => 'hired',
+            'hired_employee_id' => $candidateId,
+        ]);
+        // Rechazar las demás postulaciones
+        $offer->applications()
+            ->where('employee_id', '!=', $candidateId)
+            ->update(['status' => 'rejected']);
+
+        // Notificación o flash
+        return back()->with('success', 'Has seleccionado al candidato ideal. Esperando confirmación del empleado.');
+    }
+
+    //Empleado acepta trabajar con el empleador.
+
+    public function confirmParticipation($offerId)
+    {
+        $offer = Offer::findOrFail($offerId);
+
+        abort_unless(auth()->user()->hasRole('employee'), 403);
+
+        if ($offer->status !== 'hired' || $offer->hired_employee_id !== auth()->id()) {
+            return back()->with('error', 'No tienes una oferta pendiente para aceptar.');
+        }
+        $offer->update(['status' => 'accepted']);
+
+        return back()->with('success', 'Has aceptado la oferta. El trabajo puede comenzar.');
+    }
+
+     //Cualquiera de las partes marca el trabajo como completado.
+
+    public function markCompleted($offerId)
+    {
+        $offer = Offer::findOrFail($offerId);
+        $user = auth()->user();
+
+        if ($user->hasRole('employer')) {
+            $offer->update(['employer_confirmed' => true]);
+        } elseif ($user->hasRole('employee')) {
+            $offer->update(['employee_confirmed' => true]);
+        } else {
+            abort(403);
+        }
+
+        // Si ambos confirmaron, se marca como completado
+        if ($offer->employer_confirmed && $offer->employee_confirmed) {
+            $offer->update([
+                'status' => 'completed',
+                'completed_at' => now(),
+            ]);
+        }
+        return back()->with('success', 'Confirmación registrada.');
+    }
+
+     //Cualquiera puede cancelar antes de la contratación.
+
+    public function cancelOffer($offerId)
+    {
+        $offer = Offer::findOrFail($offerId);
+        $user = auth()->user();
+
+        // Solo se puede cancelar si está antes de la fase aceptada
+        if (in_array($offer->status, ['draft', 'open', 'negotiation', 'hired'])) {
+            $offer->update(['status' => 'cancelled']);
+            return back()->with('success', 'La oferta fue cancelada.');
+        }
+
+        return back()->with('error', 'No puedes cancelar esta oferta en el estado actual.');
     }
 }

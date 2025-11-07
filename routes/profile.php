@@ -14,5 +14,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/employer/{employer}', [EmployerController::class, 'show'])->name('employer.show');
+    Route::get('/employers/{employer}', [EmployerController::class, 'show'])
+        ->name('employers.show');
 });

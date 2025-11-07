@@ -21,7 +21,6 @@ class IdentityVerification extends Model
         'location_verified',
         'expires_at',
     ];
-
     protected $dates = ['expires_at', 'created_at', 'updated_at'];
 
     protected $casts = [
@@ -63,7 +62,7 @@ class IdentityVerification extends Model
         return $this->status === 'pending' && !$this->is_expired;
     }
 
-    // Marca como expirada (por cron o manual)
+    // Marca como expirada
     public function expire(): void
     {
         $this->update(['status' => 'expired']);

@@ -36,6 +36,34 @@ class Offer extends Model
     {
         return $this->belongsTo(User::class, 'employer_id');
     }
+    public function hiredEmployee()
+    {
+        return $this->belongsTo(User::class, 'hired_employee_id');
+    }
 
+    public function isNegotiating()
+    {
+        return $this->status === 'negotiation';
+    }
+
+    public function isHired()
+    {
+        return $this->status === 'hired';
+    }
+
+    public function isAccepted()
+    {
+        return $this->status === 'accepted';
+    }
+
+    public function isCompleted()
+    {
+        return $this->status === 'completed';
+    }
+
+    public function isClosed()
+    {
+        return $this->status === 'closed';
+    }
 }
 
