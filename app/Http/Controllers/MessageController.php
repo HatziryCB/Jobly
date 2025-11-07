@@ -17,21 +17,21 @@ class MessageController extends Controller
             abort(403, 'No puedes hablar contigo mismo.');
         }
 
-        // Caso A: Auth es EMPLEADOR y quiere hablar con un candidato
+        // Auth es EMPLEADOR y quiere hablar con un candidato
         $employerCanChat = \App\Models\Application::whereHas('offer', function($q) use ($auth) {
             $q->where('employer_id', $auth->id);
         })
             ->where('employee_id', $user->id)
             ->exists();
 
-        // Caso B: Auth es EMPLEADO y quiere hablar con un empleador
+        // Auth es EMPLEADO y quiere hablar con un empleador
         $employeeCanChat = \App\Models\Application::where('employee_id', $auth->id)
             ->whereHas('offer', function($q) use ($user) {
                 $q->where('employer_id', $user->id);
             })
             ->exists();
 
-        // Si NO se cumple ninguna relación válida → bloquear
+        // Si no se cumple ninguna relación -> bloquear
         if (!$employerCanChat && !$employeeCanChat) {
             abort(403, 'No tienes permisos para hablar con este usuario.');
         }
