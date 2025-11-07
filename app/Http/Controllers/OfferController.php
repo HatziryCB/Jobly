@@ -120,7 +120,7 @@ class OfferController extends Controller
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
             'pay_min' => ['nullable', 'integer', 'min:0'],
             'pay_max' => ['nullable', 'integer', 'min:0', 'gte:pay_min'],
-            'status' => ['required', 'in:draft,open,hired,closed'],
+            'status' => ['required', 'in:draft,open,closed'],
         ]);
         if ($data['duration_unit'] === 'hasta finalizar') {
             $data['duration_quantity'] = null;
@@ -197,7 +197,7 @@ class OfferController extends Controller
 
         abort_unless(auth()->user()->hasRole('employee'), 403);
 
-        if ($offer->status !== 'hired' || $offer->hired_employee_id !== auth()->id()) {
+        if ($offer->status !== 'hired' || (int)$offer->hired_employee_id !== (int)auth()->id()) {
             return back()->with('error', 'No tienes una oferta pendiente para aceptar.');
         }
         $offer->update(['status' => 'accepted']);
@@ -219,12 +219,15 @@ class OfferController extends Controller
         } else {
             abort(403);
         }
+        if ($offer->status === 'completed') {
+            return back()->with('info', 'El trabajo ya fue marcado como completado.');
+        }
 
         // Si ambos confirmaron, se marca como completado
         if ($offer->employer_confirmed && $offer->employee_confirmed) {
             $offer->update([
-                'status' => 'completed',
-                'completed_at' => now(),
+                'status' => 'accepted',
+                'employee_confirmed' => true,
             ]);
         }
         return back()->with('success', 'Confirmación registrada.');
@@ -238,7 +241,7 @@ class OfferController extends Controller
         $user = auth()->user();
 
         // Solo se puede cancelar si está antes de la fase aceptada
-        if (in_array($offer->status, ['draft', 'open', 'negotiation', 'hired'])) {
+        if (in_array($offer->status, ['draft', 'open', 'hired'])) {
             $offer->update(['status' => 'cancelled']);
             return back()->with('success', 'La oferta fue cancelada.');
         }

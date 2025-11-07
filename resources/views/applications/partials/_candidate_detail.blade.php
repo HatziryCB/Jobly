@@ -16,8 +16,6 @@
                 layout="inline"
             />
 
-            <x-verification-badge-label :status="$profile->verification_status" />
-
             <p class="text-sm text-gray-600 mt-1">
                 {{ $profile->municipality }}, {{ $profile->department }}
             </p>
