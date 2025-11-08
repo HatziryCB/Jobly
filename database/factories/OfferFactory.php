@@ -13,7 +13,7 @@ class OfferFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => $this->faker->randomElement([
+            'title' => $this->fake->randomElement([
                 'Jardinero por día',
                 'Ayudante de construcción',
                 'Servicio de limpieza doméstica',
