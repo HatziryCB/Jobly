@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Offer;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class OfferFactory extends Factory
@@ -27,7 +28,10 @@ class OfferFactory extends Factory
                     ? null
                     : rand(1, 10);
             },
-            'employer_id' => \App\Models\User::factory(),
+            'employer_id' => User::whereHas('roles', function($q){
+                    $q->where('name', 'employer');
+                })->inRandomOrder()->first()?->id ?? User::factory()->create()->assignRole('employer')->id,
+
             'status' => 'open',
         ];
 
