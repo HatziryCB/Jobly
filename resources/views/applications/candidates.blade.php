@@ -49,9 +49,13 @@
 
         {{-- Panel derecho --}}
         <div id="candidate-detail" class="w-full md:w-2/3 overflow-y-auto max-h-[70vh]">
-            @isset($selectedCandidate)
+            @if(isset($selectedCandidate) && isset($application))
                 @include('applications.partials._candidate_detail')
-            @endisset
+            @else
+                <div class="p-6 text-gray-500 text-center">
+                    Selecciona un candidato para ver más <deta></deta>lles.
+                </div>
+            @endif
         </div>
 
         {{-- Script para AJAX --}}

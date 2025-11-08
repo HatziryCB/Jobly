@@ -63,7 +63,7 @@
         <div class="text-red-600 font-semibold mb-2">Candidato rechazado.</div>
     @else
         <div class="flex justify-end gap-3 mt-6">
-            <a href="{{ route('chat.show', $selectedCandidate->id) }}" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-2xl text-sm flex items-center gap-1 shadow">
+            <a href="{{ route('chat.show', $selectedCandidate->id) }}" class="h-10 flex items-center px-4 bg-blue-500 text-white rounded-xl text-sm hover:bg-blue-600 transition">
                 <i class="fas fa-comment-dots"></i> Mensajear
             </a>
 
