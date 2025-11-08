@@ -9,7 +9,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('identity_verifications', function (Blueprint $table) {
-            $table->dropUnique('identity_verifications_dpi_unique'); // nombre exacto del índice
+            $table->dropUnique('dpi');
         });
     }
 
