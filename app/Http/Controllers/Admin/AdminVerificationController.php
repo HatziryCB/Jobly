@@ -15,11 +15,10 @@ class AdminVerificationController extends Controller
     {
         $query = IdentityVerification::with('user.profile');
 
-        // 🔍 Filtros
+        // Filtros
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-
         if ($request->filled('type')) {
             if ($request->type === 'identity') {
                 $query->whereNull('voucher');
@@ -85,7 +84,6 @@ class AdminVerificationController extends Controller
     public function approve($id)
     {
         $verification = IdentityVerification::with('user.profile')->findOrFail($id);
-
         // Marcar la solicitud como aprobada
         $verification->update(['status' => 'approved']);
 
@@ -93,16 +91,15 @@ class AdminVerificationController extends Controller
         $user = $verification->user;
         $profile = $user->profile;
 
-        // 🔹 Si la solicitud incluye comprobante de domicilio → verificación completa
+        // Si la solicitud incluye comprobante de domicilio → verificación completa
         if ($verification->voucher) {
             $profile->verification_status = 'full_verified';
         } else {
             $profile->verification_status = 'verified';
         }
-
         $profile->save();
 
-        // 🔹 Expirar otras solicitudes pendientes del mismo usuario
+        // Expirar otras solicitudes pendientes del mismo usuario
         IdentityVerification::where('user_id', $user->id)
             ->where('id', '!=', $verification->id)
             ->where('status', 'pending')
@@ -110,7 +107,6 @@ class AdminVerificationController extends Controller
 
         return response()->json(['success' => true]);
     }
-
 
     public function reject(Request $request, $id)
     {
@@ -149,7 +145,7 @@ class AdminVerificationController extends Controller
             )
             )
             ->orderBy('created_at', 'desc')
-            ->paginate(12);
+            ->paginate(10);
 
         return view('admin.verifications.history', compact('verifications'));
     }
@@ -163,5 +159,4 @@ class AdminVerificationController extends Controller
 
         return view('admin.verifications.user-history', compact('verifications', 'user'));
     }
-
 }
