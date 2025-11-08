@@ -25,6 +25,5 @@ RUN mkdir -p storage/framework/{cache,sessions,views} \
 EXPOSE 8000
 
 RUN php artisan migrate --force
-RUN php artisan db:seed --force
 
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
