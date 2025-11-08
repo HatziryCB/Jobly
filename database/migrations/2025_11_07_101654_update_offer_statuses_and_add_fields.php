@@ -5,44 +5,63 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    public function up(): void
+    public function up()
     {
-        Schema::table('offers', function (Blueprint $table) {
-            // 🔹 Actualizamos el enum de estados con lo esencial para contratación
-            $table->enum('status', [
-                'draft',       // creada, sin publicar
-                'open',        // publicada, recibiendo postulaciones
-                'hired',       // empleador seleccionó candidato
-                'accepted',    // ambas partes confirmaron
-                'completed',   // trabajo terminado
-                'closed'       // cerrada definitiva o cancelada
-            ])->default('open')->change();
+        // 1) Eliminar el constraint CHECK existente si lo hubiera
+        DB::statement("
+        DO $$
+        DECLARE
+            constraint_name text;
+        BEGIN
+            SELECT conname
+            INTO constraint_name
+            FROM pg_constraint
+            WHERE conrelid = 'offers'::regclass
+              AND contype = 'c';
 
-            // 🔹 Campos adicionales mínimos para control
-            if (!Schema::hasColumn('offers', 'hired_employee_id')) {
-                $table->foreignId('hired_employee_id')->nullable()->constrained('users')->nullOnDelete();
-            }
+            IF constraint_name IS NOT NULL THEN
+                EXECUTE format('ALTER TABLE offers DROP CONSTRAINT %I', constraint_name);
+            END IF;
+        END
+        $$;
+    ");
 
-            if (!Schema::hasColumn('offers', 'employer_confirmed')) {
+        // 2) Cambiar columna a varchar si aplica
+        DB::statement("ALTER TABLE offers ALTER COLUMN status TYPE VARCHAR(20)");
+
+        // 3) Establecer nuevo CHECK con estados permitidos
+        DB::statement("
+        ALTER TABLE offers
+        ADD CONSTRAINT offers_status_check CHECK (status IN (
+            'draft',
+            'open',
+            'hired',
+            'accepted',
+            'completed',
+            'closed'
+        ));
+    ");
+
+        // 4) Establecer valor por defecto
+        DB::statement("ALTER TABLE offers ALTER COLUMN status SET DEFAULT 'open'");
+
+        // 5) Asegurar NOT NULL
+        DB::statement("UPDATE offers SET status = 'open' WHERE status IS NULL");
+        DB::statement("ALTER TABLE offers ALTER COLUMN status SET NOT NULL");
+
+        // 6) Nuevos campos si la migración incluía otros
+        if (!Schema::hasColumn('offers', 'employer_confirmed')) {
+            Schema::table('offers', function (Blueprint $table) {
                 $table->boolean('employer_confirmed')->default(false);
-            }
-
-            if (!Schema::hasColumn('offers', 'employee_confirmed')) {
                 $table->boolean('employee_confirmed')->default(false);
-            }
-
-            if (!Schema::hasColumn('offers', 'completed_at')) {
                 $table->timestamp('completed_at')->nullable();
-            }
-        });
+            });
+        }
     }
+
 
     public function down(): void
     {
-        Schema::table('offers', function (Blueprint $table) {
-            // 🔹 Revertir los nuevos campos y el enum al estado anterior
-            $table->dropColumn(['hired_employee_id', 'employer_confirmed', 'employee_confirmed', 'completed_at']);
-            $table->enum('status', ['draft', 'open', 'hired', 'closed'])->default('open')->change();
-        });
+        //
     }
 };
