@@ -20,15 +20,15 @@ class OfferFactory extends Factory
                 'Pintor de interiores',
                 'Cuidador temporal',
             ]),
-            'description' => $this->faker->paragraph,
-            'requirements' => $this->faker->sentence,
-            'category' => $this->faker->randomElement(['Limpieza', 'Pintura', 'Mudanza', 'Electricidad']),
-            'location_text' => $this->faker->address,
-            'lat' => $this->faker->latitude(15.69, 15.74), // Puerto Barrios approx
-            'lng' => $this->faker->longitude(-88.61, -88.58),
-            'pay_min' => $this->faker->numberBetween(50, 150),
-            'pay_max' => $this->faker->numberBetween(151, 300),
-            'duration_unit' => $this->faker->randomElement(['horas', 'días', 'semanas', 'meses', 'hasta finalizar']),
+            'description' => $this->fake->paragraph,
+            'requirements' => $this->fake->sentence,
+            'category' => $this->fake->randomElement(['Limpieza', 'Pintura', 'Mudanza', 'Electricidad']),
+            'location_text' => $this->fake->address,
+            'lat' => $this->fake->latitude(15.69, 15.74), // Puerto Barrios approx
+            'lng' => $this->fake->longitude(-88.61, -88.58),
+            'pay_min' => $this->fake->numberBetween(50, 150),
+            'pay_max' => $this->fake->numberBetween(151, 300),
+            'duration_unit' => $this->fake->randomElement(['horas', 'días', 'semanas', 'meses', 'hasta finalizar']),
             'duration_quantity' => function (array $attributes) {
                 return $attributes['duration_unit'] === 'hasta finalizar'
                     ? null
