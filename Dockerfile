@@ -16,7 +16,12 @@ COPY . .
 # Instalar dependencias PHP y Node y compilar Vite
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader \
     && npm ci \
-    && npm run build
+    && npm run build \
+    && php artisan config:clear \
+    && php artisan cache:clear \
+    && php artisan route:clear \
+    && php artisan view:clear
+
 
 RUN mkdir -p storage/framework/{cache,sessions,views} \
     && chown -R www-data:www-data /var/www \
@@ -24,6 +29,6 @@ RUN mkdir -p storage/framework/{cache,sessions,views} \
 
 EXPOSE 8000
 
-RUN php artisan migrate --force
+RUN php artisan migrate --force && php artisan db:seed --force
 
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
