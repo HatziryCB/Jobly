@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class   User extends Authenticatable //implements MustVerifyEmail
+class   User extends Authenticatable implements MustVerifyEmail
 {
     use  HasApiTokens, HasFactory, HasRoles, Notifiable;
     protected $fillable = [
