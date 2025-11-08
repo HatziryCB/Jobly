@@ -13,7 +13,7 @@ class OfferFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => fake()->randomElement([
+            'title' => $this->faker->randomElement([
                 'Jardinero por día',
                 'Ayudante de construcción',
                 'Servicio de limpieza doméstica',
@@ -21,27 +21,27 @@ class OfferFactory extends Factory
                 'Cuidador temporal',
             ]),
 
-            'description' => fake()->paragraph(),
-            'requirements' => fake()->sentence(),
+            'description' => $this->faker->paragraph(),
+            'requirements' => $this->faker->sentence(),
 
-            'category' => fake()->randomElement(['Limpieza', 'Pintura', 'Mudanza', 'Electricidad']),
+            // <-- ESTA LÍNEA ERA PARTE DEL PROBLEMA ORIGINAL
+            'category' => $this->faker->randomElement(['Limpieza', 'Pintura', 'Mudanza', 'Electricidad']),
 
-            'location_text' => fake()->address(),
+            'location_text' => $this->faker->address(),
 
-            'lat' => fake()->latitude(15.69, 15.74),
-            'lng' => fake()->longitude(-88.61, -88.58),
+            'lat' => $this->faker->latitude(15.69, 15.74),
+            'lng' => $this->faker->longitude(-88.61, -88.58),
 
-            'pay_min' => fake()->numberBetween(50, 150),
-            'pay_max' => fake()->numberBetween(151, 300),
+            'pay_min' => $this->faker->numberBetween(50, 150),
+            'pay_max' => $this->faker->numberBetween(151, 300),
 
-            'duration_unit' => fake()->randomElement(['horas', 'días', 'semanas', 'meses', 'hasta finalizar']),
+            'duration_unit' => $this->faker->randomElement(['horas', 'días', 'semanas', 'meses', 'hasta finalizar']),
             'duration_quantity' => function (array $attributes) {
                 return $attributes['duration_unit'] === 'hasta finalizar'
                     ? null
                     : rand(1, 10);
             },
 
-            // Usar empleadores ya seedados
             'employer_id' => User::whereHas('roles', fn($q) =>
             $q->where('name', 'employer')
             )->inRandomOrder()->value('id'),
