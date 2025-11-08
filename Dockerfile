@@ -12,6 +12,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install
 
 WORKDIR /var/www
 COPY . .
+COPY .env .env
 
 # Instalar dependencias PHP y Node y compilar Vite
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader \
