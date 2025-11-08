@@ -34,9 +34,8 @@
                         :status="$user->profile->verification_status"
                         :firstName="$user->first_name"
                         :lastName="$user->last_name"
-                        layout="center"
-                    />
-                    <x-verification-badge-label :status="$user->profile->verification_status" />
+                        layout="stacked"/>
+
                 </div>
 
                 <p class="text-gray-500 text-sm">{{ $user->email }}</p>

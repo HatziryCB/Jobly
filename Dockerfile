@@ -6,23 +6,14 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Instalar Node directamente en esta imagen
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && apt-get install -y nodejs
 
 WORKDIR /var/www
 COPY . .
-COPY .env .env
 
-# Instalar dependencias PHP y Node y compilar Vite
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader \
     && npm ci \
-    && npm run build \
-    && php artisan config:clear \
-    && php artisan cache:clear \
-    && php artisan route:clear \
-    && php artisan view:clear
-
+    && npm run build
 
 RUN mkdir -p storage/framework/{cache,sessions,views} \
     && chown -R www-data:www-data /var/www \
@@ -30,6 +21,4 @@ RUN mkdir -p storage/framework/{cache,sessions,views} \
 
 EXPOSE 8000
 
-RUN php artisan migrate --force && php artisan db:seed --force
-
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+CMD ["sh", "-c", "php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=8000"]
