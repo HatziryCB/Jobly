@@ -2,7 +2,7 @@
 
 @section('dashboard-content')
     <div class="flex flex-col md:flex-row gap-4">
-        {{-- Lista de candidatos a la izquierda --}}
+        {{-- Lista de candidatos--}}
         <div class="w-full md:w-1/3 space-y-4 overflow-y-auto max-h-[70vh] pr-2">
             @forelse ($applications as $application)
                 @php
