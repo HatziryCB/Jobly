@@ -34,9 +34,9 @@ class OfferFactory extends Factory
                     ? null
                     : rand(1, 10);
             },
-            'employer_id' => User::whereHas('roles', function($q){
-                    $q->where('name', 'employer');
-                })->inRandomOrder()->first()?->id ?? User::factory()->create()->assignRole('employer')->id,
+            'employer_id' => fn() => User::whereHas('roles', fn($q) =>
+            $q->where('name', 'employer')
+            )->inRandomOrder()->value('id'),
 
             'status' => 'open',
         ];

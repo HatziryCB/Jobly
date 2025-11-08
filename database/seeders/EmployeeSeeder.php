@@ -10,19 +10,43 @@ class EmployeeSeeder extends Seeder
 {
     public function run(): void
     {
-        $employee = User::firstOrCreate(
-            ['email' => 'empleado@jobly.com'],
+        $employees = [
             [
                 'first_name' => 'Mario',
                 'last_name' => 'Empleado',
-                'email_verified_at' => now(),
-                'password' => Hash::make('Empleado123!'),
+                'email' => 'empleado@jobly.com',
                 'phone' => '22223333',
-                'tos_accepted' => true,
-                'tos_accepted_at' => now(),
-            ]
-        );
+            ],
+            [
+                'first_name' => 'Ana',
+                'last_name' => 'Ramírez',
+                'email' => 'empleado2@jobly.com',
+                'phone' => '55556666',
+            ],
+            [
+                'first_name' => 'Luis',
+                'last_name' => 'Gómez',
+                'email' => 'empleado3@jobly.com',
+                'phone' => '77778888',
+            ],
+        ];
 
-        $employee->syncRoles(['employee']);
+        foreach ($employees as $data) {
+            $employee = User::firstOrCreate(
+                ['email' => $data['email']],
+                [
+                    'first_name' => $data['first_name'],
+                    'last_name' => $data['last_name'],
+                    'email_verified_at' => now(),
+                    'password' => Hash::make('Empleado123!'),
+                    'phone' => $data['phone'],
+                    'tos_accepted' => true,
+                    'tos_accepted_at' => now(),
+                ]
+            );
+
+            $employee->syncRoles(['employee']);
+        }
     }
+
 }
